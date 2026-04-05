@@ -4,6 +4,7 @@ import api from '../../services/api';
 import { FiClock, FiUser, FiArrowLeft, FiShare2, FiYoutube, FiImage } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { getMediaUrl } from '../../utils/mediaUrl';
+import Seo from '../../components/Seo';
 
 const getYoutubeEmbedUrl = (url) => {
   if (!url) return '';
@@ -39,23 +40,29 @@ const Article = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-sm text-neutral-500">Loading article...</div>
-      </div>
+      <>
+        <Seo title="Blog Article" description="Loading the latest Sa-Sewa Foundation story." />
+        <div className="min-h-screen flex items-center justify-center bg-white">
+          <div className="text-sm text-neutral-500">Loading article...</div>
+        </div>
+      </>
     );
   }
 
   if (!post) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-6 text-center">
-        <h2 className="text-4xl font-black text-neutral-900 mb-4 tracking-tighter">Article Not Found</h2>
-        <p className="text-neutral-500 mb-8 max-w-md">
-          The story you are looking for may have been archived or moved.
-        </p>
-        <Link to="/blog" className="px-8 py-4 bg-primary-900 text-white rounded-2xl font-bold hover:scale-105 transition-all">
-          Return to Blog
-        </Link>
-      </div>
+      <>
+        <Seo title="Article not found" description="The requested Sa-Sewa Foundation story could not be found." />
+        <div className="min-h-screen flex flex-col items-center justify-center bg-white p-6 text-center">
+          <h2 className="text-4xl font-black text-neutral-900 mb-4 tracking-tighter">Article Not Found</h2>
+          <p className="text-neutral-500 mb-8 max-w-md">
+            The story you are looking for may have been archived or moved.
+          </p>
+          <Link to="/blog" className="px-8 py-4 bg-primary-900 text-white rounded-2xl font-bold hover:scale-105 transition-all">
+            Return to Blog
+          </Link>
+        </div>
+      </>
     );
   }
 
@@ -65,6 +72,10 @@ const Article = () => {
       animate={{ opacity: 1 }}
       className="min-h-screen bg-white pb-24"
     >
+      <Seo
+        title={post?.title || 'Blog Article'}
+        description={post?.content ? post.content.replace(/<[^>]*>/g, '').slice(0, 160) : 'Read the latest Sa-Sewa Foundation story.'}
+      />
       <header className="bg-white">
         <div className="max-w-4xl mx-auto px-6 pt-16 pb-10">
           <Link to="/blog" className="inline-flex items-center gap-2 text-neutral-500 hover:text-primary-700 mb-8 group transition-all text-sm font-medium">

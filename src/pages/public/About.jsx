@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiTarget, FiEye, FiArrowRight, FiCheck, FiHeart } from 'react-icons/fi';
+import Seo from '../../components/Seo';
 
 const About = () => {
   return (
     <div className="bg-white w-full overflow-hidden">
+      <Seo title="About Us" description="Learn about Sa-Sewa Foundation, our mission, and the communities we serve across Nepal." />
 
       {/* ── Hero ── */}
       <section className="relative pt-32 pb-28 px-6 bg-white overflow-hidden border-b border-neutral-100">

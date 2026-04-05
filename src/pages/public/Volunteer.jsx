@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { FiCheckCircle, FiBriefcase, FiHeart, FiAward, FiPaperclip, FiArrowRight } from 'react-icons/fi';
 import api from '../../services/api';
+import Seo from '../../components/Seo';
 
 const getRoleMeta = (role) => {
   if (role === 'internship') {
@@ -111,6 +112,7 @@ const Volunteer = () => {
 
   return (
     <div className="bg-white w-full overflow-hidden">
+      <Seo title={roleMeta.title} description={roleMeta.intro} />
 
       <section className="relative pt-32 pb-24 px-6 overflow-hidden bg-neutral-50 border-b border-neutral-100">
         <div className="absolute inset-0 overflow-hidden">

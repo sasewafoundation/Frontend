@@ -1,9 +1,11 @@
 import React from 'react';
 import { FiArrowRight, FiShield, FiBookOpen, FiUsers } from 'react-icons/fi';
+import Seo from '../../components/Seo';
 
 const Donation = () => {
   return (
     <div className="bg-white w-full overflow-hidden">
+      <Seo title="Donate" description="Support Sa-Sewa Foundation and help fund community projects across Nepal." />
 
       {/* ── Hero ── */}
       <section className="relative pt-32 pb-20 px-6 bg-primary-900 text-white overflow-hidden">

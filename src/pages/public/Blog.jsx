@@ -4,6 +4,7 @@ import api from '../../services/api';
 import { FiArrowRight, FiClock, FiUser } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { getMediaUrl } from '../../utils/mediaUrl';
+import Seo from '../../components/Seo';
 
 const Blog = () => {
   const [posts, setPosts]   = useState([]);
@@ -24,6 +25,7 @@ const Blog = () => {
 
   return (
     <div className="bg-white min-h-screen overflow-hidden">
+      <Seo title="Blog" description="Read stories, updates, and reports from Sa-Sewa Foundation." />
 
       {/* ── Header ── */}
       <section className="pt-32 pb-16 px-6 bg-white border-b border-gray-100">

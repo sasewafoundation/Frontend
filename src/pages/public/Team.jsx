@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiLinkedin, FiMail } from 'react-icons/fi';
+import Seo from '../../components/Seo';
 
 const Team = () => {
   const teamMembers = [/*
@@ -31,6 +32,7 @@ const Team = () => {
 
   return (
     <div className="bg-white py-32 overflow-hidden w-full">
+      <Seo title="Team" description="Meet the people supporting the work of Sa-Sewa Foundation." />
       <div className="mx-auto max-w-7xl px-6">
         
         {/* Header Block */}

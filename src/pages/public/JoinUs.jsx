@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowRight, FiBriefcase, FiUsers, FiCheckCircle } from 'react-icons/fi';
+import Seo from '../../components/Seo';
 
 const JoinUs = () => {
   const paths = [
@@ -24,6 +25,7 @@ const JoinUs = () => {
 
   return (
     <div className="bg-white w-full overflow-hidden">
+      <Seo title="Join Us" description="Apply to volunteer or intern with Sa-Sewa Foundation and contribute to real community work." />
       <section className="relative pt-32 pb-20 px-6 bg-neutral-50 border-b border-neutral-100 overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-primary-100/50 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2 pointer-events-none" />
         <div className="max-w-4xl mx-auto text-center">

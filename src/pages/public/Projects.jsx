@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiArrowRight, FiMapPin } from 'react-icons/fi';
 import api from '../../services/api';
 import { getMediaUrl } from '../../utils/mediaUrl';
+import Seo from '../../components/Seo';
 
 const defaultImages = [
   'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80',
@@ -23,6 +24,7 @@ const Projects = () => {
 
   return (
     <div className="bg-white w-full overflow-hidden">
+      <Seo title="Projects" description="Explore Sa-Sewa Foundation projects supporting education, health, and community development across Nepal." />
 
       {/* ── Page Hero ── */}
       <section className="relative pt-32 pb-20 px-6 bg-neutral-50 border-b border-neutral-100 overflow-hidden">

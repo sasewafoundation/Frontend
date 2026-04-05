@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiArrowRight, FiHeart, FiUsers, FiMapPin, FiCheck } from 'react-icons/fi';
 import api from '../../services/api';
 import { getMediaUrl } from '../../utils/mediaUrl';
+import Seo from '../../components/Seo';
 
 /* ── Animated counter ── */
 const useCounter = (end, duration = 2200) => {
@@ -71,6 +72,7 @@ const Home = () => {
 
   return (
     <div className="w-full overflow-x-hidden">
+      <Seo title="Sa-Sewa Foundation" />
 
       {/* ═══════════════════════════════════════════════ */}
       {/* HERO — refined storytelling */}

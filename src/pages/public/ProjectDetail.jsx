@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { FiArrowLeft, FiMapPin, FiCalendar, FiUsers, FiArrowRight, FiImage, FiYoutube } from 'react-icons/fi';
 import api from '../../services/api';
 import { getMediaUrl } from '../../utils/mediaUrl';
+import Seo from '../../components/Seo';
 
 const getYoutubeEmbedUrl = (url) => {
   if (!url) return '';
@@ -40,18 +41,24 @@ const ProjectDetail = () => {
   }, [slug]);
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-white"><div className="text-sm text-neutral-500">Loading project...</div></div>
+    <>
+      <Seo title="Project" description="Loading project details from Sa-Sewa Foundation." />
+      <div className="min-h-screen flex items-center justify-center bg-white"><div className="text-sm text-neutral-500">Loading project...</div></div>
+    </>
   );
 
   if (error || !project) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6 text-center">
-      <div className="text-6xl mb-4">🌿</div>
-      <h2 className="text-2xl font-bold text-neutral-900 mb-3">Project not found</h2>
-      <p className="text-neutral-500 mb-8 max-w-sm">This project may have been moved or doesn't exist yet.</p>
-      <Link to="/projects" className="btn-primary">
-        <FiArrowLeft size={15} /> Back to Projects
-      </Link>
-    </div>
+    <>
+      <Seo title="Project not found" description="The requested Sa-Sewa Foundation project could not be found." />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6 text-center">
+        <div className="text-6xl mb-4">🌿</div>
+        <h2 className="text-2xl font-bold text-neutral-900 mb-3">Project not found</h2>
+        <p className="text-neutral-500 mb-8 max-w-sm">This project may have been moved or doesn't exist yet.</p>
+        <Link to="/projects" className="btn-primary">
+          <FiArrowLeft size={15} /> Back to Projects
+        </Link>
+      </div>
+    </>
   );
 
   const images = project.images?.length ? project.images : [
@@ -61,6 +68,10 @@ const ProjectDetail = () => {
 
   return (
     <div className="bg-white w-full overflow-hidden">
+      <Seo
+        title={project?.title || 'Project'}
+        description={project?.description || 'Detailed view of a Sa-Sewa Foundation project.'}
+      />
 
       {/* ── Hero Image ── */}
       <section className="relative h-[70vh] min-h-[440px] max-h-[760px] overflow-hidden bg-neutral-900">
