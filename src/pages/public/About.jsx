@@ -1,67 +1,104 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiTarget, FiEye, FiArrowRight, FiCheck, FiHeart } from 'react-icons/fi';
+import { FiArrowRight, FiHeart } from 'react-icons/fi';
 import Seo from '../../components/Seo';
+
+const values = [
+  {
+    title: 'Service to Communities',
+    text: 'We put people, especially the most vulnerable and disadvantaged, at the heart of everything we do.',
+  },
+  {
+    title: 'Accountability',
+    text: 'We act with honesty, transparency, and responsibility, and use resources wisely.',
+  },
+  {
+    title: 'Solidarity and Inclusion',
+    text: 'We ensure fairness and equal opportunities for all, especially the most vulnerable and marginalised.',
+  },
+  {
+    title: 'Empathy and Compassion',
+    text: 'We respond with urgency, respect, and empathy, protecting people’s dignity and well-being.',
+  },
+  {
+    title: 'Wisdom through Learning',
+    text: 'We combine local knowledge with new ideas to create practical solutions that last.',
+  },
+  {
+    title: 'Action for Sustainability',
+    text: 'We turn values into action by building livelihoods, protecting the environment, and fostering resilience.',
+  },
+];
+
+const principles = [
+  {
+    title: 'Put communities first',
+    text: 'We listen to people and let their voices guide our work. Real change happens when communities lead.',
+  },
+  {
+    title: 'Include everyone',
+    text: 'We focus on disadvantaged, excluded, and vulnerable groups so no one is left behind.',
+  },
+  {
+    title: 'Act openly and responsibly',
+    text: 'We use resources wisely, stay transparent, and take responsibility for results.',
+  },
+  {
+    title: 'Strengthen local leadership and learning',
+    text: 'We build local skills and knowledge while adapting with new ideas so solutions are practical and lasting.',
+  },
+  {
+    title: 'Build lasting resilience',
+    text: 'We support livelihoods, protect the environment, and prepare communities for future challenges.',
+  },
+  {
+    title: 'Work together and honour service',
+    text: 'We collaborate with government, partners, and communities, recognizing those who contribute to social change.',
+  },
+];
 
 const About = () => {
   return (
     <div className="bg-white w-full overflow-hidden">
-      <Seo title="About Us" description="Learn about Sa-Sewa Foundation, our mission, and the communities we serve across Nepal." />
+      <Seo title="About Us" description="Sa Sewa Foundation Nepal is a not-for-profit organization working to improve the well-being of communities through education, health, livelihoods, and resilience." />
 
-      {/* ── Hero ── */}
-      <section className="relative pt-32 pb-28 px-6 bg-white overflow-hidden border-b border-neutral-100">
-        {/* Light background orbs using brand blue */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary-50 rounded-full blur-3xl translate-x-1/3 -translate-y-1/4 pointer-events-none opacity-80" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary-100/40 rounded-full blur-3xl -translate-x-1/4 translate-y-1/3 pointer-events-none" />
+      <section className="relative pt-32 pb-20 px-6 bg-white overflow-hidden border-b border-neutral-100">
+        <div className="absolute top-0 right-0 w-[560px] h-[560px] bg-primary-50 rounded-full blur-3xl translate-x-1/3 -translate-y-1/4 pointer-events-none opacity-80" />
+        <div className="absolute bottom-0 left-0 w-[420px] h-[420px] bg-amber-50 rounded-full blur-3xl -translate-x-1/4 translate-y-1/3 pointer-events-none opacity-80" />
 
-        <div className="relative max-w-5xl mx-auto">
-          <span className="pill-primary mb-7">Our Foundation</span>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-5xl md:text-6xl font-bold text-neutral-900 tracking-tight mb-6 leading-tight">
-                About{' '}
-                <span className="text-primary-600">Sa-Sewa</span><br />
-                Foundation
-              </h1>
-              <p className="text-lg text-neutral-500 font-normal leading-relaxed max-w-lg mb-8">
-                A volunteer-driven non-profit based in Lalitpur, Nepal. Since 2018, our 
-                teams have worked directly with rural communities — no middlemen, no barriers, 
-                just real people doing the work.
+        <div className="relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-14 items-center">
+          <div>
+            <span className="pill-primary mb-7">Sa Sewa Foundation</span>
+            <h1 className="text-5xl md:text-6xl font-bold text-neutral-900 tracking-tight mb-6 leading-tight">
+              Sa Sewa Foundation
+            </h1>
+            <div className="space-y-5 text-base md:text-lg text-neutral-600 leading-[1.9] max-w-3xl">
+              <p>
+                Sa Sewa Foundation Nepal is a not-for-profit organization working to improve the well-being of communities by using resources wisely, promoting fairness, and encouraging collaboration. It is registered under Nepal’s Company Act 2063 and follows the guidelines of the Social Welfare Council (SWC), along with local government and tax regulations, ensuring accountability and transparency.
               </p>
-              <div className="flex flex-wrap gap-6">
-                {[
-                  { value: '2018', label: 'Founded' },
-                  { value: 'Lalitpur', label: 'Headquarters' },
-                  { value: 'Nepal', label: 'Focus Region' },
-                ].map((item, i) => (
-                  <div key={i} className="text-center">
-                    <div className="text-2xl font-bold text-primary-600">{item.value}</div>
-                    <div className="text-xs text-neutral-400 font-semibold uppercase tracking-wider mt-1">{item.label}</div>
-                  </div>
-                ))}
-              </div>
+              <p>
+                Operating within Nepal’s legal framework, the Foundation supports community development and social welfare initiatives in partnership with authorities and stakeholders. Guided by its mission, Sa Sewa works closely with communities to advance education, health, livelihoods, and resilience helping people live better, grow stronger, and find more opportunities through its programs and services.
+              </p>
             </div>
 
-            {/* Hero image */}
-            <div className="relative">
-              <div className="aspect-[5/4] rounded-3xl overflow-hidden shadow-[var(--shadow-float)]">
-                <img
-                  src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=900&q=80"
-                  alt="Sa-Sewa Foundation community work"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              {/* Corner badge */}
-              <div className="absolute -bottom-4 -left-4 bg-white rounded-2xl border border-neutral-100 shadow-[var(--shadow-card)] px-5 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
-                    <FiHeart size={18} className="text-white" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-neutral-900">Community First</div>
-                    <div className="text-xs text-neutral-400">Always. Without exception.</div>
-                  </div>
+          </div>
+
+          <div className="relative">
+            <div className="aspect-[5/4] rounded-[2rem] overflow-hidden shadow-[var(--shadow-float)]">
+              <img
+                src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1200&q=80"
+                alt="Sa Sewa Foundation community work"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="absolute -bottom-5 -left-5 bg-white rounded-3xl border border-neutral-100 shadow-[var(--shadow-card)] px-6 py-5 max-w-xs">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-primary-600 rounded-2xl flex items-center justify-center shrink-0">
+                  <FiHeart size={20} className="text-white" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-neutral-900 mb-1">Community-led</div>
+                  <div className="text-sm text-neutral-500 leading-6">Programs designed with communities, partners, and local stakeholders.</div>
                 </div>
               </div>
             </div>
@@ -69,149 +106,128 @@ const About = () => {
         </div>
       </section>
 
-      {/* ── Our Story ── */}
-      <section className="py-24 px-6 bg-neutral-50 border-b border-neutral-100">
+      <section className="py-28 px-6 bg-neutral-50 border-b border-neutral-100">
         <div className="max-w-7xl mx-auto">
-          <div className="max-w-3xl mx-auto text-center">
-            <span className="section-label block text-center">Our Story</span>
-            <h2 className="section-title mb-8">Why Sa-Sewa exists.</h2>
-            <div className="space-y-5 text-base text-neutral-600 leading-[1.85] text-left">
-              <p>
-                Sa-Sewa began in 2018 when a small group of Nepali volunteers — students, doctors, 
-                engineers, and teachers — decided that caring about their country wasn't enough. 
-                They chose to <em>act</em>. Starting with a single health camp in a remote village 
-                in Sindhupalchok, they discovered something powerful: communities didn't just 
-                need resources, they needed <strong>to be seen and heard</strong>.
-              </p>
-              <p>
-                We've grown since then, but our core belief hasn't changed. Every programme we run 
-                is co-designed with the communities we serve. We don't impose solutions — we listen, 
-                learn, and then build together. That's what makes our impact last.
-              </p>
-              <p>
-                Today, Sa-Sewa operates across 12 rural villages, has trained over 300 volunteers, 
-                and completed 25+ community projects. But the numbers are secondary. What matters 
-                are the children who can read, the families who received care, and the communities 
-                who now have the tools to grow independently.
-              </p>
-            </div>
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <span className="section-label block text-center">Vision · Mission · Goal</span>
+            <h2 className="section-title mb-6">The direction behind the work.</h2>
+            <p className="text-base md:text-lg text-neutral-600 leading-[1.9] max-w-3xl mx-auto">
+              These three commitments shape how Sa Sewa serves communities across Nepal.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {[
+              {
+                tag: 'Vision',
+                title: 'A compassionate society where everyone is included and empowered to thrive.',
+                text: 'We imagine a Nepal where dignity, opportunity, and belonging are available to every person and every community.',
+                accent: 'from-primary-50 via-white to-white',
+                tagClass: 'bg-primary-600 text-white shadow-[0_10px_20px_-10px_rgba(195,76,16,0.55)]',
+              },
+              {
+                tag: 'Mission',
+                title: 'Partner with communities in advancing education, health, resilience, and livelihoods.',
+                text: 'We work alongside communities to build practical, lasting change through shared effort and trusted partnerships.',
+                accent: 'from-amber-50 via-white to-white',
+                tagClass: 'bg-amber-500 text-white shadow-[0_10px_20px_-10px_rgba(217,119,6,0.55)]',
+              },
+              {
+                tag: 'Goal',
+                title: 'Enhance well-being, resilience, and opportunities through integrated programs and services.',
+                text: 'We focus on connected support that helps people live better, grow stronger, and access more opportunities.',
+                accent: 'from-lime-50 via-white to-white',
+                tagClass: 'bg-emerald-600 text-white shadow-[0_10px_20px_-10px_rgba(5,150,105,0.45)]',
+              },
+            ].map((item) => (
+              <div key={item.tag} className={`relative overflow-hidden rounded-[2rem] border border-neutral-100 bg-gradient-to-br ${item.accent} p-9 lg:p-10 min-h-[320px] flex flex-col shadow-[var(--shadow-card)]`}>
+                <div className="absolute top-0 right-0 w-44 h-44 bg-white/40 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none" />
+                <div className={`inline-flex items-center rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.24em] mb-8 w-fit ${item.tagClass}`}>
+                  {item.tag}
+                </div>
+                <h3 className="text-2xl lg:text-[1.9rem] font-bold text-neutral-900 tracking-tight leading-tight mb-5 max-w-[18ch]">
+                  {item.title}
+                </h3>
+                <p className="text-base text-neutral-600 leading-8 max-w-[34ch]">
+                  {item.text}
+                </p>
+                <div className="mt-auto pt-10">
+                  <div className="h-px w-16 bg-neutral-200" />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── Mission ── */}
-      <section className="py-24 px-6 bg-white">
+      <section className="py-24 px-6 bg-white border-b border-neutral-100">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="max-w-3xl mx-auto text-center mb-14">
+            <span className="section-label block text-center">Sa Sewa Core Values</span>
+            <h2 className="section-title mb-6">Values that shape how we serve.</h2>
+            <p className="text-base text-neutral-600 leading-[1.9]">
+              These values guide decisions, partnerships, and the way the Foundation engages with communities.
+            </p>
+          </div>
 
-            <div className="relative group">
-              <div className="absolute inset-0 bg-primary-50 rounded-3xl -rotate-1 scale-[1.02] transition-transform duration-500 group-hover:-rotate-2" />
-              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-[var(--shadow-card)]">
-                <img
-                  src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=80"
-                  alt="Students learning in a Sa-Sewa programme"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {values.map((item) => (
+              <div key={item.title} className="rounded-[2rem] border border-neutral-100 bg-neutral-50 p-7 shadow-[var(--shadow-card)]">
+                <div className="h-1.5 w-16 rounded-full bg-gradient-to-r from-primary-600 via-amber-500 to-emerald-600 mb-6" />
+                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-400 mb-4">
+                  Guiding value
+                </div>
+                <h3 className="text-xl font-bold text-neutral-900 mb-3 leading-tight">{item.title}</h3>
+                <p className="text-base text-neutral-600 leading-7">{item.text}</p>
               </div>
-            </div>
-
-            <div>
-              <div className="w-11 h-11 bg-primary-50 text-primary-600 flex items-center justify-center rounded-2xl mb-6">
-                <FiTarget size={22} />
-              </div>
-              <span className="section-label">Our Mission</span>
-              <h2 className="text-4xl font-bold text-neutral-900 tracking-tight mb-5 leading-tight">
-                Accountable action,<br />lasting change.
-              </h2>
-              <div className="w-14 h-0.5 bg-primary-600 rounded-full mb-7" />
-              <p className="text-base text-neutral-600 leading-[1.85] mb-5">
-                We believe every person has the right to basic dignity, quality education, and access to
-                healthcare. Sa-Sewa cuts through the noise — we go straight to the families who need
-                help, led by volunteers who genuinely care.
-              </p>
-              <p className="text-base text-neutral-600 leading-[1.85] mb-8">
-                By working from within the community rather than outside it, we ensure our support is
-                culturally relevant, immediately effective, and long-lasting.
-              </p>
-              <ul className="space-y-3">
-                {[
-                  'Direct community involvement in every project',
-                  'Full transparency in fund allocation',
-                  'Measurable, reported community outcomes',
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-neutral-700 font-medium">
-                    <span className="w-5 h-5 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center shrink-0">
-                      <FiCheck size={11} />
-                    </span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── Vision ── */}
-      <section className="py-24 px-6 bg-neutral-50 border-t border-neutral-100">
+      <section className="py-24 px-6 bg-neutral-50">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="max-w-3xl mx-auto text-center mb-14">
+            <span className="section-label block text-center">Our Principles</span>
+            <h2 className="section-title mb-6">How we work every day.</h2>
+            <p className="text-base text-neutral-600 leading-[1.9]">
+              Our principles turn the Foundation’s values into practical commitments.
+            </p>
+          </div>
 
-            <div className="lg:order-last relative group">
-              <div className="absolute inset-0 bg-lime-50 rounded-3xl rotate-1 scale-[1.02] transition-transform duration-500 group-hover:rotate-2 opacity-70" />
-              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-[var(--shadow-card)]">
-                <img
-                  src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80"
-                  alt="Community infrastructure projects"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
+          <div className="relative mx-auto max-w-4xl pl-0 md:pl-10">
+            <div className="absolute left-5 top-2 bottom-2 hidden md:block w-px bg-neutral-200" />
+            {principles.map((item, index) => (
+              <div key={item.title} className={`relative mb-5 md:mb-6 rounded-[2rem] border border-neutral-100 bg-white p-7 shadow-[var(--shadow-card)] ${index === principles.length - 1 ? 'mb-0' : ''}`}>
+                <div className="flex items-start gap-5">
+                  <div className="relative shrink-0">
+                    <div className="w-11 h-11 rounded-2xl bg-primary-600 text-white flex items-center justify-center font-semibold shadow-[0_10px_20px_-10px_rgba(196,74,16,0.45)]">
+                      {String(index + 1).padStart(2, '0')}
+                    </div>
+                    <div className="absolute left-1/2 top-11 hidden md:block h-[calc(100%+1.5rem)] w-px -translate-x-1/2 bg-neutral-200" />
+                  </div>
+                  <div className="pt-1">
+                    <h3 className="text-lg font-bold text-neutral-900 mb-2">{item.title}</h3>
+                    <p className="text-base text-neutral-600 leading-7">{item.text}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div>
-              <div className="w-11 h-11 bg-amber-50 text-accent-gold flex items-center justify-center rounded-2xl mb-6">
-                <FiEye size={22} />
-              </div>
-              <span className="section-label">Our Vision</span>
-              <h2 className="text-4xl font-bold text-neutral-900 tracking-tight mb-5 leading-tight">
-                Communities that<br />thrive independently.
-              </h2>
-              <div className="w-14 h-0.5 bg-accent-gold rounded-full mb-7" />
-              <p className="text-base text-neutral-600 leading-[1.85] mb-5">
-                Our ultimate goal is simple: for the communities we serve to no longer need us. We
-                build self-reliance, not dependency. Every school built, every skill taught, every
-                health camp held is a step toward that independence.
-              </p>
-              <p className="text-base text-neutral-600 leading-[1.85]">
-                We envision a Nepal where geography is never a barrier to opportunity — and we're
-                working hard every day to make that real.
-              </p>
-            </div>
-
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── Closing quote ── */}
       <section className="py-28 px-6 bg-white text-center">
         <div className="max-w-3xl mx-auto">
-          <div className="w-12 h-0.5 bg-primary-200 rounded-full mx-auto mb-12" />
-          <blockquote className="text-2xl md:text-3xl font-semibold text-neutral-800 leading-[1.5] mb-8 italic">
-            "We don't just deliver aid. We build the tools communities need
-            so they can eventually build it themselves."
+          <div className="w-12 h-0.5 bg-primary-200 rounded-full mx-auto mb-10" />
+          <blockquote className="text-2xl md:text-3xl font-semibold text-neutral-800 leading-[1.6] mb-8 italic">
+            “Working with communities through service, accountability, and inclusion is how lasting change takes root.”
           </blockquote>
-          <p className="text-sm font-semibold text-primary-600 uppercase tracking-widest mb-12">
-            — Executive Board, Sa-Sewa Foundation
-          </p>
           <Link to="/join-us" className="btn-primary">
             Join Our Team <FiArrowRight size={15} />
           </Link>
         </div>
       </section>
-
     </div>
   );
 };

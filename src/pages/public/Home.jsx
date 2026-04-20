@@ -1,33 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FiArrowRight, FiHeart, FiUsers, FiMapPin, FiCheck } from 'react-icons/fi';
+import { FiArrowRight, FiCheck } from 'react-icons/fi';
 import api from '../../services/api';
 import { getMediaUrl } from '../../utils/mediaUrl';
 import Seo from '../../components/Seo';
-
-/* ── Animated counter ── */
-const useCounter = (end, duration = 2200) => {
-  const [count, setCount] = useState(0);
-  const nodeRef = useRef(null);
-  const started = useRef(false);
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting || started.current) return;
-      started.current = true;
-      let start = 0;
-      const step = end / (duration / 16);
-      const timer = setInterval(() => {
-        start += step;
-        if (start >= end) { setCount(end); clearInterval(timer); }
-        else setCount(Math.ceil(start));
-      }, 16);
-      observer.disconnect();
-    }, { threshold: 0.15 });
-    if (nodeRef.current) observer.observe(nodeRef.current);
-    return () => observer.disconnect();
-  }, [end, duration]);
-  return { count, nodeRef };
-};
 
 /* ── Scroll-reveal hook ── */
 const useReveal = (threshold = 0.12) => {
@@ -60,12 +36,6 @@ const Home = () => {
     })();
   }, []);
 
-  const c1 = useCounter(25);
-  const c2 = useCounter(300);
-  const c3 = useCounter(12);
-  const c5 = useCounter(4800);
-
-  const kpiReveal  = useReveal();
   const aboutReveal = useReveal();
   const projReveal  = useReveal();
   const blogReveal  = useReveal();
@@ -82,11 +52,11 @@ const Home = () => {
         {/* Background image */}
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1800&q=85"
-            alt="Rural community life in Nepal"
+            src="/hero-landscape-2.jpeg"
+            alt="Hillside communities in Nepal"
             className="w-full h-full object-cover object-center"
             onLoad={() => setHeroLoaded(true)}
-            style={{ filter: 'brightness(0.8) saturate(0.9) blur(0.6px)' }}
+            style={{ filter: 'brightness(0.82) saturate(0.97) blur(0.5px)' }}
           />
           {/* Subtle readability layer */}
           <div className="absolute inset-0 bg-black/18" />
@@ -117,8 +87,7 @@ const Home = () => {
             </h1>
 
             <p className="text-lg text-white/80 font-normal leading-relaxed mb-10 max-w-2xl">
-              We partner with villages, schools, and local families to support education,
-              health, and community resilience where support is needed most.
+              Sa Sewa Foundation Nepal is a not-for-profit organization serving communities through practical action and partnership.
             </p>
 
             {/* CTA row */}
@@ -135,66 +104,6 @@ const Home = () => {
 
         {/* Bottom fade */}
         <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
-      </section>
-
-
-      {/* ═══════════════════════════════════════════════ */}
-      {/* KPI STATS                                      */}
-      {/* ═══════════════════════════════════════════════ */}
-      <section className="py-20 bg-white" ref={kpiReveal.ref}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-px bg-neutral-100 rounded-3xl overflow-hidden shadow-[var(--shadow-soft)]">
-            {[
-              {
-                hook: c1, suffix: '+', label: 'Projects',
-                sub: 'Community-led initiatives',
-                icon: <FiHeart size={20} />,
-                color: 'text-primary-600',
-                bg: 'bg-primary-50',
-              },
-              {
-                hook: c2, suffix: '+', label: 'Volunteers',
-                sub: 'Active throughout the year',
-                icon: <FiUsers size={20} />,
-                color: 'text-accent-gold',
-                bg: 'bg-amber-50',
-              },
-              {
-                hook: c3, suffix: '+', label: 'Villages',
-                sub: 'Across rural Nepal',
-                icon: <FiMapPin size={20} />,
-                color: 'text-accent-teal',
-                bg: 'bg-lime-50',
-              },
-              {
-                hook: c5, suffix: '+', label: 'People Helped',
-                sub: 'Across health, education, relief',
-                icon: <FiHeart size={20} />,
-                color: 'text-primary-700',
-                bg: 'bg-primary-100',
-              },
-            ].map((s, i) => (
-              <div
-                key={i}
-                className={`bg-white p-8 lg:p-10 flex flex-col gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card)] ${
-                  kpiReveal.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                }`}
-                style={{ transitionDelay: `${i * 80}ms` }}
-              >
-                <div className={`w-11 h-11 ${s.bg} ${s.color} flex items-center justify-center rounded-2xl`}>
-                  {s.icon}
-                </div>
-                <div ref={s.hook.nodeRef} className="text-[2.8rem] font-bold text-neutral-900 leading-none tracking-tight tabular-nums">
-                  {s.hook.count.toLocaleString()}{s.suffix}
-                </div>
-                <div>
-                  <div className="text-[15px] font-semibold text-neutral-800 mb-1">{s.label}</div>
-                  <div className="text-[13px] text-neutral-400 leading-snug">{s.sub}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
 
@@ -238,24 +147,21 @@ const Home = () => {
             >
               <span className="section-label">Who we are</span>
               <h2 className="section-title mb-6">
-                Born from community.<br />Built for people.
+                A foundation rooted in service.<br />Built with communities.
               </h2>
               <p className="text-base text-neutral-600 leading-[1.85] mb-5">
-                Sa-Sewa was founded by a group of Nepali changemakers who saw first-hand the gap between 
-                international aid and real community needs. We don't operate from boardrooms — we work in 
-                classrooms, clinics, and kitchens alongside the people we serve.
+                Sa Sewa Foundation Nepal is a not-for-profit organization working to improve the well-being of communities by using resources wisely, promoting fairness, and encouraging collaboration.
               </p>
               <p className="text-base text-neutral-600 leading-[1.85] mb-10">
-                Our programmes focus on education, basic healthcare, and disaster relief in underserved 
-                rural areas. Every effort is volunteer-led, community-driven, and transparently reported.
+                Operating within Nepal’s legal framework, we support community development and social welfare initiatives in partnership with authorities and stakeholders.
               </p>
 
               {/* Feature list */}
               <ul className="space-y-3 mb-10">
                 {[
-                  'Education & literacy for rural children',
-                  'Free health camps across 12 villages',
-                  'Disaster response & relief distribution',
+                  'Registered under Nepal’s Company Act 2063',
+                  'Guided by SWC, local government, and tax regulations',
+                  'Focused on education, health, livelihoods, and resilience',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-sm text-neutral-700 font-medium">
                     <span className="w-5 h-5 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center shrink-0">
