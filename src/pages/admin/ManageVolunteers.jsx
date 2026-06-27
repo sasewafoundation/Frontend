@@ -61,6 +61,7 @@ const ManageVolunteers = () => {
             <h2 className="text-2xl font-semibold text-neutral-900">Volunteer Applications</h2>
             <p className="text-neutral-500 text-sm mt-2 max-w-md">Review applicant profiles, update status, and access uploaded CVs.</p>
           </div>
+          
           <div className="flex items-center gap-3 bg-neutral-50 px-5 py-3 rounded-xl border border-neutral-100">
             <div className="flex flex-col">
               <span className="text-xl font-semibold text-neutral-900 leading-none">{volunteers.length}</span>

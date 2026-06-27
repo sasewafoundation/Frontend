@@ -2,6 +2,8 @@ import React from 'react';
 import { FiArrowRight, FiShield, FiBookOpen, FiUsers } from 'react-icons/fi';
 import Seo from '../../components/Seo';
 
+const coordinatorEmail = 'contact@sa-sewa.org';
+
 const Donation = () => {
   return (
     <div className="bg-white w-full overflow-hidden">
@@ -48,10 +50,11 @@ const Donation = () => {
                 <FiUsers size={24} />
               </div>
               <div className="text-4xl font-bold mb-2 text-primary-600 group-hover:text-primary-700 transition-colors">60%</div>
-              <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-primary-900 transition-colors">Direct Field Aid</h3>
+              <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-primary-900 transition-colors">Direct Community Aid</h3>
               <p className="text-sm text-gray-500 leading-relaxed group-hover:text-neutral-700 transition-colors">
-                Medicines, food supplies, emergency relief kits, and construction of community facilities
-                in rural Nepal — delivered by our volunteer teams on the ground.
+                Education materials, digital devices, livelihood support, medicines, food supplies,
+                emergency relief kits, and construction and repair of community facilities in rural areas —
+                delivered by our team on the ground.
               </p>
             </div>
 
@@ -62,8 +65,8 @@ const Donation = () => {
               <div className="text-4xl font-bold mb-2 text-primary-600 group-hover:text-primary-700 transition-colors">25%</div>
               <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-primary-900 transition-colors">Education & Skills</h3>
               <p className="text-sm text-gray-500 leading-relaxed group-hover:text-neutral-700 transition-colors">
-                Building and equipping local schools, funding student scholarships, and running vocational
-                workshops that give young people a real path forward.
+                Empowering rural communities through education, scholarships, and practical skills for
+                children and youth so that they have a real chance to learn, grow, and shape their future.
               </p>
             </div>
 
@@ -119,10 +122,10 @@ const Donation = () => {
             goes exactly where it's needed.
           </p>
           <a
-            href="mailto:donate@sasewa.org?subject=Donation Inquiry"
+            href={`mailto:${coordinatorEmail}?subject=Donation%20Inquiry`}
             className="inline-flex items-center gap-3 bg-white text-primary-700 border border-primary-200 font-bold px-9 py-4 rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all text-base"
           >
-            Email Our Coordinator <FiArrowRight size={18} />
+            Email Our Coordinator ({coordinatorEmail}) <FiArrowRight size={18} />
           </a>
         </div>
       </section>

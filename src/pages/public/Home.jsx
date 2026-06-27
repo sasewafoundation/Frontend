@@ -4,6 +4,7 @@ import { FiArrowRight, FiCheck } from 'react-icons/fi';
 import api from '../../services/api';
 import { getMediaUrl } from '../../utils/mediaUrl';
 import Seo from '../../components/Seo';
+import Pic1 from '../../assets/Pic1.jpeg';
 
 /* ── Scroll-reveal hook ── */
 const useReveal = (threshold = 0.12) => {
@@ -120,7 +121,7 @@ const Home = () => {
             >
               <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-[var(--shadow-float)]">
                 <img
-                  src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80"
+                  src={Pic1}
                   alt="Children learning at a Sa-Sewa programme"
                   className="w-full h-full object-cover"
                   loading="lazy"
