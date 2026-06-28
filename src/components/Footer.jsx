@@ -58,7 +58,7 @@ const Footer = () => {
                 <span className="leading-relaxed text-white">Tarakeshwor-7<br/>Kathmandu<br/>Nepal</span>
               </li>
               <li className="pt-2">
-                <a href="mailto:contact@sa-sewa.org" className="hover:text-white transition-colors font-medium">contact@sa-sewa.org</a>
+                <a href="mailto:sasewafoundation@gmail.com" className="hover:text-white transition-colors font-medium">sasewafoundation@gmail.com</a>
               </li>
               <li>
                 <a href="tel:+9779840186494" className="hover:text-white transition-colors font-medium">+977 9840186494</a>
