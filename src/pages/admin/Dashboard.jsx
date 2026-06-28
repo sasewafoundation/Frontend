@@ -16,18 +16,18 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [projRes, volRes, blogRes, msgRes] = await Promise.all([
+        const [projRes, volRes, blogRes, msgRes] = await Promise.allSettled([
           api.get('/projects'),
           api.get('/volunteers'),
           api.get('/blog'),
           api.get('/messages'),
         ]);
-        
+
         setStats({
-          projects: projRes.data.data?.length || 0,
-          volunteers: volRes.data.data?.length || 0,
-          blogs: blogRes.data.data?.length || 0,
-          messages: msgRes.data.data?.length || 0,
+          projects: projRes.status === 'fulfilled' ? (projRes.value.data.data?.length || 0) : 0,
+          volunteers: volRes.status === 'fulfilled' ? (volRes.value.data.data?.length || 0) : 0,
+          blogs: blogRes.status === 'fulfilled' ? (blogRes.value.data.data?.length || 0) : 0,
+          messages: msgRes.status === 'fulfilled' ? (msgRes.value.data.data?.length || 0) : 0,
         });
       } catch (error) {
         console.error("Failed to fetch admin stats", error);
