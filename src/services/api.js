@@ -17,4 +17,23 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+    const hadAuthHeader = Boolean(error.config?.headers?.Authorization || error.config?.headers?.authorization);
+
+    if (status === 401 && hadAuthHeader && typeof window !== 'undefined') {
+      localStorage.removeItem('adminToken');
+      sessionStorage.setItem('adminSessionMessage', 'Your admin session expired or became invalid. Please sign in again.');
+
+      if (!window.location.pathname.startsWith('/admin/login')) {
+        window.location.replace('/admin/login');
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export default api;

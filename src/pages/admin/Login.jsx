@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { FiLock, FiMail, FiArrowRight, FiShield } from 'react-icons/fi';
@@ -9,6 +10,14 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const sessionMessage = sessionStorage.getItem('adminSessionMessage');
+    if (sessionMessage) {
+      setError(sessionMessage);
+      sessionStorage.removeItem('adminSessionMessage');
+    }
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
