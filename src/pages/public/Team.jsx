@@ -78,7 +78,7 @@ const Team = () => {
                 
                 {/* Clean social/contact anchors */}
                 <div className="flex items-center justify-center md:justify-start gap-4">
-                  <a href={`mailto:contact@sasewa.org`} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:bg-primary-50 hover:text-primary-600 transition-colors">
+                  <a href={`mailto:sasewafoundation@gmail.com`} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:bg-primary-50 hover:text-primary-600 transition-colors">
                     <FiMail size={18} />
                   </a>
                   <a href={`#`} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:bg-primary-50 hover:text-primary-600 transition-colors">

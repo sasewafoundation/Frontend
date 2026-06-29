@@ -19,7 +19,7 @@ const Footer = () => {
               </Link>
             </div>
             <p className="text-sm leading-relaxed mb-6 font-light text-primary-200">
-              Empowering communities and inspiring for building a better society.git 
+              Empowering communities and inspiring for building a better society
             </p>
             <div className="flex space-x-5">
               <a href="https://www.instagram.com/sasewafoundation/?hl=en" className="w-10 h-10 flex items-center justify-center rounded-full bg-primary-800 hover:bg-white hover:text-primary-600 transition-colors" aria-label="Instagram"><FiInstagram size={18} /></a>

@@ -2,7 +2,7 @@ import React from 'react';
 import { FiArrowRight, FiShield, FiBookOpen, FiUsers } from 'react-icons/fi';
 import Seo from '../../components/Seo';
 
-const coordinatorEmail = 'contact@sa-sewa.org';
+const coordinatorEmail = 'sasewafoundation@gmail.com';
 
 const Donation = () => {
   return (
