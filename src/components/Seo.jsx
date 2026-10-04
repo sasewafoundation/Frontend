@@ -13,6 +13,7 @@ const Seo = ({ title, description = defaultDescription }) => {
       <meta name="description" content={description} />
       <link rel="icon" type="image/png" href="/logo.png" />
       <link rel="apple-touch-icon" href="/logo.png" />
+
     </Helmet>
   );
 };

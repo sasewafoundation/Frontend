@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { FiUserCheck, FiUserX, FiMail, FiPhone, FiBriefcase, FiGlobe, FiTrash2, FiX, FiFileText, FiEye } from 'react-icons/fi';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { getMediaUrl } from '../../utils/mediaUrl';
 import LogoLoader from '../../components/LogoLoader';
 
@@ -15,7 +15,7 @@ const ManageVolunteers = () => {
       const res = await api.get('/volunteers');
       setVolunteers(res.data.data || []);
     } catch (err) {
-      console.error('Failed to load volunteers data.', err);
+      console.error('Failed to load volunteers data:', err.response?.data || err.message);
     } finally {
       setLoading(false);
     }
@@ -29,22 +29,22 @@ const ManageVolunteers = () => {
     const apiStatus = newStatus.toLowerCase();
     try {
       await api.put(`/volunteers/${id}`, { status: apiStatus });
-      setVolunteers((current) => current.map((volunteer) => volunteer._id === id ? { ...volunteer, status: apiStatus } : volunteer));
-      setSelectedVolunteer((current) => current && current._id === id ? { ...current, status: apiStatus } : current);
+      setVolunteers((current) => current.map((volunteer) => (volunteer._id === id ? { ...volunteer, status: apiStatus } : volunteer)));
+      setSelectedVolunteer((current) => (current && current._id === id ? { ...current, status: apiStatus } : current));
     } catch (err) {
       alert(err.response?.data?.message || 'Error updating record status.');
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Destroy this volunteer record permanently?')) return;
+    if (!window.confirm('Delete this volunteer record and CV file permanently?')) return;
 
     try {
       await api.delete(`/volunteers/${id}`);
       setVolunteers((current) => current.filter((volunteer) => volunteer._id !== id));
       setSelectedVolunteer(null);
     } catch (err) {
-      alert('Record deletion failed.');
+      alert(err.response?.data?.message || 'Record deletion failed.');
     }
   };
 
@@ -55,17 +55,17 @@ const ManageVolunteers = () => {
       <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
           <div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 text-primary-700 rounded-full text-xs font-semibold mb-3 w-fit">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 text-primary-700 rounded-full text-xs font-semibold mb-3 w-fit border border-primary-100">
               <FiBriefcase /> Talent Pipeline
             </div>
             <h2 className="text-2xl font-semibold text-neutral-900">Volunteer Applications</h2>
-            <p className="text-neutral-500 text-sm mt-2 max-w-md">Review applicant profiles, update status, and access uploaded CVs.</p>
+            <p className="text-neutral-500 text-sm mt-2 max-w-md">Review applicant profiles, update engagement status, and access uploaded CVs.</p>
           </div>
           
           <div className="flex items-center gap-3 bg-neutral-50 px-5 py-3 rounded-xl border border-neutral-100">
             <div className="flex flex-col">
               <span className="text-xl font-semibold text-neutral-900 leading-none">{volunteers.length}</span>
-              <span className="text-xs font-medium text-neutral-500 mt-1">Total submissions</span>
+              <span className="text-xs font-medium text-neutral-500 mt-1">Total Submissions</span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-white border border-neutral-100 flex items-center justify-center text-primary-600 shadow-sm">
               <FiUserCheck size={18} />
@@ -79,9 +79,9 @@ const ManageVolunteers = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-neutral-50">
-                <th className="px-6 py-4 text-xs font-semibold text-neutral-500 border-b border-neutral-100">Identity & Contact</th>
-                <th className="px-6 py-4 text-xs font-semibold text-neutral-500 border-b border-neutral-100">Application Type</th>
-                <th className="px-6 py-4 text-xs font-semibold text-neutral-500 border-b border-neutral-100">Skillset & Availability</th>
+                <th className="px-6 py-4 text-xs font-semibold text-neutral-500 border-b border-neutral-100">Applicant</th>
+                <th className="px-6 py-4 text-xs font-semibold text-neutral-500 border-b border-neutral-100">Type</th>
+                <th className="px-6 py-4 text-xs font-semibold text-neutral-500 border-b border-neutral-100">Skills & Availability</th>
                 <th className="px-6 py-4 text-xs font-semibold text-neutral-500 border-b border-neutral-100">Status</th>
                 <th className="px-6 py-4 text-xs font-semibold text-neutral-500 border-b border-neutral-100 text-right">Actions</th>
               </tr>
@@ -89,10 +89,10 @@ const ManageVolunteers = () => {
             <tbody className="divide-y divide-neutral-100">
               {volunteers.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-16 text-center">
-                    <div className="flex flex-col items-center gap-4 opacity-30">
-                      <FiGlobe size={48} className="text-gray-400" />
-                      <p className="text-sm font-medium text-gray-400">No active applications in queue.</p>
+                  <td colSpan="5" className="px-6 py-16 text-center text-sm font-medium text-neutral-400">
+                    <div className="flex flex-col items-center gap-3">
+                      <FiGlobe size={40} className="opacity-40" />
+                      <p>No volunteer applications in queue.</p>
                     </div>
                   </td>
                 </tr>
@@ -104,55 +104,59 @@ const ManageVolunteers = () => {
                     onClick={() => setSelectedVolunteer(volunteer)}
                   >
                     <td className="px-6 py-5">
-                      <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 rounded-full bg-gray-100 border-2 border-white shadow-sm flex items-center justify-center font-semibold text-primary-800 text-lg group-hover:scale-105 group-hover:bg-primary-700 group-hover:text-white transition-all duration-300">
-                          {volunteer.name?.charAt(0)}
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-sm shrink-0">
+                          {volunteer.name?.charAt(0) || 'V'}
                         </div>
                         <div className="flex flex-col min-w-0">
-                          <span className="text-base font-semibold text-gray-900 truncate">{volunteer.name}</span>
-                          <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500 group-hover:text-primary-600 transition-colors truncate mt-1">
+                          <span className="text-sm font-semibold text-neutral-900 truncate">{volunteer.name}</span>
+                          <span className="flex items-center gap-1.5 text-xs text-neutral-500 truncate mt-0.5">
                             <FiMail size={12} /> {volunteer.email}
                           </span>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-5">
-                      <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-neutral-100 text-neutral-700 text-xs font-semibold">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full bg-neutral-100 text-neutral-700 text-xs font-semibold">
                         {volunteer.applicationType || 'Volunteer'}
-                      </div>
+                      </span>
                     </td>
                     <td className="px-6 py-5">
-                      <div className="flex flex-col space-y-2">
-                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary-600 rounded-lg text-xs font-semibold w-fit border border-primary-100">
-                          <FiGlobe /> {volunteer.availability || 'Hybrid'}
+                      <div className="flex flex-col space-y-1">
+                        <span className="inline-flex items-center gap-1.5 text-xs text-neutral-600 font-medium">
+                          <FiGlobe size={12} className="text-primary-600" /> {volunteer.availability || 'Hybrid'}
                         </span>
-                        <span className="text-sm font-medium text-gray-600 line-clamp-1">{volunteer.skills || 'General Support'}</span>
+                        <span className="text-xs text-neutral-500 truncate max-w-xs">{volunteer.skills || 'General Support'}</span>
                       </div>
                     </td>
                     <td className="px-6 py-5">
-                      <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                        volunteer.status === 'approved' ? 'bg-lime-100 text-accent-teal' :
-                        volunteer.status === 'pending' ? 'bg-amber-100 text-accent-gold' :
-                        'bg-red-50 text-red-500'
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                        volunteer.status === 'approved' ? 'bg-emerald-50 text-emerald-700' :
+                        volunteer.status === 'pending' ? 'bg-amber-50 text-amber-700' :
+                        'bg-red-50 text-red-600'
                       }`}>
-                        <div className={`w-1.5 h-1.5 rounded-full ${volunteer.status === 'approved' ? 'bg-accent-teal' : volunteer.status === 'pending' ? 'bg-accent-gold' : 'bg-red-500'} animate-pulse`} />
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          volunteer.status === 'approved' ? 'bg-emerald-500' :
+                          volunteer.status === 'pending' ? 'bg-amber-500 animate-pulse' :
+                          'bg-red-500'
+                        }`} />
                         <span className="capitalize">{volunteer.status}</span>
-                      </div>
+                      </span>
                     </td>
                     <td className="px-6 py-5 text-right space-x-2" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => setSelectedVolunteer(volunteer)}
-                        className="p-2.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-white transition-all shadow-sm"
-                        title="View Profile"
+                        className="p-2 bg-neutral-100 text-neutral-600 rounded-lg hover:bg-white hover:shadow-sm transition-all"
+                        title="View Application"
                       >
-                        <FiEye size={16} />
+                        <FiEye size={15} />
                       </button>
                       <button
                         onClick={() => handleDelete(volunteer._id)}
-                        className="p-2.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-red-50 hover:text-red-600 hover:shadow-sm transition-all active:scale-95"
-                        title="Delete Record"
+                        className="p-2 bg-neutral-100 text-neutral-500 rounded-lg hover:bg-red-50 hover:text-red-600 transition-all"
+                        title="Delete Application"
                       >
-                        <FiTrash2 size={16} />
+                        <FiTrash2 size={15} />
                       </button>
                     </td>
                   </tr>
@@ -165,116 +169,110 @@ const ManageVolunteers = () => {
 
       <AnimatePresence>
         {selectedVolunteer && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm"
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-black/50 backdrop-blur-sm"
             onClick={() => setSelectedVolunteer(null)}
           >
-            <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className="bg-white w-full max-w-3xl rounded-[2rem] shadow-2xl overflow-hidden relative max-h-[92vh] overflow-y-auto"
+            <div
+              className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 md:p-8 relative max-h-[92vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={() => setSelectedVolunteer(null)}
-                className="absolute top-5 right-5 p-2.5 text-gray-400 hover:bg-gray-100 rounded-full transition-all z-20"
+                className="absolute top-5 right-5 p-2 text-neutral-400 hover:text-neutral-700 rounded-lg transition-colors"
+                aria-label="Close dialog"
               >
-                <FiX size={24} />
+                <FiX size={22} />
               </button>
 
-              <div className="p-8 md:p-10">
-                <div className="flex items-start gap-4 mb-8 pr-12">
-                  <div className="w-16 h-16 rounded-2xl bg-primary-50 text-primary-800 flex items-center justify-center font-black text-2xl shrink-0">
-                    {selectedVolunteer.name?.charAt(0)}
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-2xl font-bold text-neutral-900 leading-tight">{selectedVolunteer.name}</h3>
-                    <p className="text-sm text-neutral-500 mt-1">{selectedVolunteer.applicationType || 'Volunteer'} application</p>
-                  </div>
+              <div className="flex items-center gap-4 mb-6 pr-8">
+                <div className="w-14 h-14 rounded-2xl bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-xl shrink-0">
+                  {selectedVolunteer.name?.charAt(0) || 'V'}
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                  <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
-                    <div className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2">Status</div>
-                    <div className="text-sm font-semibold capitalize text-neutral-900">{selectedVolunteer.status}</div>
-                  </div>
-                  <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
-                    <div className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2">Availability</div>
-                    <div className="text-sm font-semibold text-neutral-900">{selectedVolunteer.availability || 'Hybrid'}</div>
-                  </div>
-                  <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 sm:col-span-2">
-                    <div className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2">Skills</div>
-                    <div className="text-sm font-medium text-neutral-700">{selectedVolunteer.skills || 'General Humanitarian Support'}</div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                  <div className="rounded-2xl border border-neutral-200 p-4">
-                    <div className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2">Email</div>
-                    <div className="flex items-center gap-2 text-sm font-medium text-neutral-700 break-all">
-                      <FiMail className="text-primary-600 shrink-0" />
-                      {selectedVolunteer.email}
-                    </div>
-                  </div>
-                  <div className="rounded-2xl border border-neutral-200 p-4">
-                    <div className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2">Phone</div>
-                    <div className="flex items-center gap-2 text-sm font-medium text-neutral-700">
-                      <FiPhone className="text-primary-600 shrink-0" />
-                      {selectedVolunteer.phone || 'No Data'}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 mb-6">
-                  <div className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2">Personal Statement</div>
-                  <p className="text-sm leading-7 text-neutral-600">{selectedVolunteer.message || 'No personal statement provided.'}</p>
-                </div>
-
-                <div className="rounded-2xl border border-neutral-200 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div>
-                    <div className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-1">CV</div>
-                    <p className="text-sm text-neutral-600">Open the uploaded CV in a new tab.</p>
-                  </div>
-                  {selectedVolunteer.cvFile ? (
-                    <a
-                      href={getMediaUrl(selectedVolunteer.cvFile)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary-950 text-white font-semibold hover:bg-primary-900 transition-colors"
-                    >
-                      <FiFileText />
-                      Open CV
-                    </a>
-                  ) : (
-                    <span className="text-sm text-neutral-400">No CV uploaded</span>
-                  )}
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                  {selectedVolunteer.status === 'pending' && (
-                    <button
-                      onClick={() => handleStatusChange(selectedVolunteer._id, 'approved')}
-                      className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-teal text-white font-semibold"
-                    >
-                      <FiUserCheck /> Approve
-                    </button>
-                  )}
-                  {selectedVolunteer.status !== 'rejected' && (
-                    <button
-                      onClick={() => handleStatusChange(selectedVolunteer._id, 'rejected')}
-                      className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-neutral-200 text-neutral-700 font-semibold hover:bg-neutral-50"
-                    >
-                      <FiUserX /> Reject
-                    </button>
-                  )}
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold text-neutral-900 truncate">{selectedVolunteer.name}</h3>
+                  <p className="text-xs text-neutral-500 mt-0.5">{selectedVolunteer.applicationType || 'Volunteer'} Application</p>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+                  <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Status</div>
+                  <div className="text-sm font-semibold capitalize text-neutral-900">{selectedVolunteer.status}</div>
+                </div>
+                <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+                  <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Availability</div>
+                  <div className="text-sm font-semibold text-neutral-900">{selectedVolunteer.availability || 'Hybrid'}</div>
+                </div>
+                <div className="rounded-xl border border-neutral-200 p-4">
+                  <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Email</div>
+                  <div className="flex items-center gap-2 text-sm text-neutral-700 break-all">
+                    <FiMail className="text-primary-600 shrink-0" />
+                    {selectedVolunteer.email}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-neutral-200 p-4">
+                  <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Phone</div>
+                  <div className="flex items-center gap-2 text-sm text-neutral-700">
+                    <FiPhone className="text-primary-600 shrink-0" />
+                    {selectedVolunteer.phone || 'No Data'}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 sm:col-span-2">
+                  <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">Skills & Profession</div>
+                  <div className="text-sm font-medium text-neutral-700">{selectedVolunteer.skills}</div>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 mb-6">
+                <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mb-2">Statement / Motivation</div>
+                <p className="text-sm leading-relaxed text-neutral-600 whitespace-pre-wrap">
+                  {selectedVolunteer.message || 'No personal statement provided.'}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-neutral-200 p-4 flex items-center justify-between gap-4 mb-6">
+                <div>
+                  <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mb-0.5">Resume / CV</div>
+                  <p className="text-xs text-neutral-500">
+                    {selectedVolunteer.cvOriginalName || 'Attached curriculum vitae'}
+                  </p>
+                </div>
+                {selectedVolunteer.cvFile ? (
+                  <a
+                    href={getMediaUrl(selectedVolunteer.cvFile)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-600 text-white font-semibold text-xs hover:bg-primary-700 transition-colors shadow-sm"
+                  >
+                    <FiFileText />
+                    Open CV
+                  </a>
+                ) : (
+                  <span className="text-xs text-neutral-400">No CV file uploaded</span>
+                )}
+              </div>
+
+              <div className="flex gap-3 justify-end pt-4 border-t border-neutral-100">
+                {selectedVolunteer.status !== 'approved' && (
+                  <button
+                    onClick={() => handleStatusChange(selectedVolunteer._id, 'approved')}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition-colors"
+                  >
+                    <FiUserCheck /> Approve
+                  </button>
+                )}
+                {selectedVolunteer.status !== 'rejected' && (
+                  <button
+                    onClick={() => handleStatusChange(selectedVolunteer._id, 'rejected')}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-200 text-neutral-700 text-xs font-semibold hover:bg-neutral-50 transition-colors"
+                  >
+                    <FiUserX /> Reject
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         )}
       </AnimatePresence>
     </div>

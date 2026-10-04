@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
-import { FiPlus, FiTrash2, FiAward, FiShield, FiBriefcase, FiCheckCircle, FiLink, FiX, FiUpload, FiEdit3 } from 'react-icons/fi';
-import { motion, AnimatePresence } from 'framer-motion';
+import { FiPlus, FiTrash2, FiAward, FiShield, FiBriefcase, FiLink, FiX, FiUpload, FiEdit3 } from 'react-icons/fi';
+import { AnimatePresence } from 'framer-motion';
 import { getMediaUrl } from '../../utils/mediaUrl';
 import LogoLoader from '../../components/LogoLoader';
 
@@ -15,12 +15,38 @@ const ManageSponsors = () => {
   const [logoPreview, setLogoPreview] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // FIX 16: Track object URLs to revoke on unmount and prevent memory leaks
+  const objectUrlsRef = useRef([]);
+
+  const createPreviewUrl = (file) => {
+    const url = URL.createObjectURL(file);
+    objectUrlsRef.current.push(url);
+    return url;
+  };
+
+  const cleanupObjectUrls = () => {
+    objectUrlsRef.current.forEach((url) => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch {
+        // Ignored
+      }
+    });
+    objectUrlsRef.current = [];
+  };
+
+  useEffect(() => {
+    return () => {
+      cleanupObjectUrls();
+    };
+  }, []);
+
   const fetchSponsors = async () => {
     try {
       const res = await api.get('/sponsors');
       setSponsors(res.data.data || []);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load sponsors:', err.response?.data || err.message);
     } finally {
       setLoading(false);
     }
@@ -31,6 +57,7 @@ const ManageSponsors = () => {
   }, []);
 
   const resetForm = () => {
+    cleanupObjectUrls();
     setForm({ name: '', websiteUrl: '' });
     setLogoFile(null);
     setLogoPreview(null);
@@ -43,6 +70,7 @@ const ManageSponsors = () => {
   };
 
   const openEdit = (sponsor) => {
+    cleanupObjectUrls();
     setEditingId(sponsor._id);
     setForm({
       name: sponsor.name || '',
@@ -57,7 +85,7 @@ const ManageSponsors = () => {
     const file = e.target.files?.[0];
     if (file) {
       setLogoFile(file);
-      setLogoPreview(URL.createObjectURL(file));
+      setLogoPreview(createPreviewUrl(file));
     }
   };
 
@@ -67,7 +95,7 @@ const ManageSponsors = () => {
     try {
       const formData = new FormData();
       formData.append('name', form.name);
-      formData.append('websiteUrl', form.websiteUrl);
+      formData.append('websiteUrl', form.websiteUrl || '');
       if (logoFile) {
         formData.append('logo', logoFile);
       }
@@ -75,10 +103,10 @@ const ManageSponsors = () => {
       let res;
       if (editingId) {
         res = await api.put(`/sponsors/${editingId}`, formData);
-        setSponsors(sponsors.map(s => s._id === editingId ? res.data.data : s));
+        setSponsors((prev) => prev.map((s) => (s._id === editingId ? res.data.data : s)));
       } else {
         res = await api.post('/sponsors', formData);
-        setSponsors([res.data.data, ...sponsors]);
+        setSponsors((prev) => [res.data.data, ...prev]);
       }
 
       setIsModalOpen(false);
@@ -91,89 +119,88 @@ const ManageSponsors = () => {
   };
 
   const handleDelete = async (id) => {
-    if(window.confirm("Permanently dissolve this corporate partnership record?")) {
-        try {
-            await api.delete(`/sponsors/${id}`);
-            setSponsors(sponsors.filter(s => s._id !== id));
-        } catch (err) {
-            alert("Dissolution failed.");
-        }
+    if (window.confirm('Delete this supporter record permanently?')) {
+      try {
+        await api.delete(`/sponsors/${id}`);
+        setSponsors((prev) => prev.filter((s) => s._id !== id));
+      } catch (err) {
+        alert(err.response?.data?.message || 'Deletion failed.');
+      }
     }
   };
 
   if (loading) return <LogoLoader message="Loading supporters..." />;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-12 rounded-[3.5rem] border border-gray-100 shadow-sm relative overflow-hidden group">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm">
         <div className="relative z-10 w-full md:w-auto">
-            <div className="flex items-center gap-3 text-[10px] font-black text-primary-700 uppercase tracking-widest mb-3 px-4 py-1.5 bg-primary-50 rounded-full w-fit border border-primary-100">
-                <FiAward /> Strategic Alliances
-            </div>
-          <h2 className="text-4xl font-black tracking-tighter text-gray-900 group-hover:text-primary-800 transition-colors duration-500">Supporters</h2>
-          <p className="text-gray-400 font-medium mt-1">Manage supporter logos, names, and website links shown on the homepage.</p>
+          <div className="flex items-center gap-2 text-xs font-semibold text-primary-700 mb-3 px-3 py-1.5 bg-primary-50 rounded-full w-fit border border-primary-100">
+            <FiAward /> Strategic Alliances
+          </div>
+          <h2 className="text-2xl font-semibold text-neutral-900">Supporters & Partners</h2>
+          <p className="text-neutral-500 text-sm mt-1">Manage partner logos, titles, and website links displayed across the public site.</p>
         </div>
-        <button onClick={openCreate} className="relative z-10 bg-primary-950 text-white px-10 py-5 rounded-[2rem] font-bold shadow-2xl shadow-primary-950/20 hover:scale-105 active:scale-95 transition-all group flex items-center gap-3">
-          <FiPlus className="group-hover:rotate-180 transition-transform duration-700" />
+        <button 
+          onClick={openCreate} 
+          className="bg-primary-600 text-white px-6 py-3.5 rounded-xl font-semibold text-sm hover:bg-primary-700 active:scale-95 transition-all flex items-center gap-2.5 shadow-sm"
+        >
+          <FiPlus />
           Add Supporter
         </button>
-        
-        {/* Abstract background design */}
-        <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-primary-50 rounded-full blur-[100px] opacity-40 group-hover:bg-primary-100 transition-all duration-700"></div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sponsors.length === 0 ? (
-          <div className="col-span-full py-24 text-center bg-white rounded-[3rem] border border-dashed border-gray-200">
-            <div className="flex flex-col items-center gap-5 opacity-40">
-                <FiBriefcase size={56} className="text-gray-300" />
-                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No active corporate affiliations.</p>
+          <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-dashed border-neutral-200">
+            <div className="flex flex-col items-center gap-3 text-neutral-400">
+              <FiBriefcase size={40} className="opacity-50" />
+              <p className="text-sm font-medium">No supporters registered yet.</p>
             </div>
           </div>
         ) : (
-          sponsors.map(sponsor => (
-            <div key={sponsor._id} className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm hover:shadow-float hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden">
-                <div className="flex items-start justify-between mb-8 relative z-10 gap-4">
-                    <div className="w-24 h-24 rounded-3xl bg-white flex items-center justify-center text-primary-900 transition-all duration-500 shadow-sm border border-primary-100/50 overflow-hidden shrink-0">
-                        {sponsor.logo ? (
-                          <img src={getMediaUrl(sponsor.logo)} alt={sponsor.name} className="w-full h-full object-contain p-3" />
-                        ) : (
-                          <FiShield size={32} />
-                        )}
-                    </div>
-                    <button 
-                        onClick={() => handleDelete(sponsor._id)}
-                        className="p-3 bg-gray-50 text-gray-300 rounded-xl hover:bg-red-500 hover:text-white transition-all"
-                        title="Remove Affiliation"
-                    >
-                        <FiTrash2 size={16} />
-                    </button>
+          sponsors.map((sponsor) => (
+            <div key={sponsor._id} className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm hover:shadow-card transition-all duration-300 flex flex-col group relative">
+              <div className="flex items-start justify-between mb-5 gap-4">
+                <div className="w-20 h-20 rounded-2xl bg-neutral-50 flex items-center justify-center p-3 border border-neutral-100 overflow-hidden shrink-0">
+                  {sponsor.logo ? (
+                    <img src={getMediaUrl(sponsor.logo)} alt={sponsor.name} className="w-full h-full object-contain" />
+                  ) : (
+                    <FiShield size={28} className="text-neutral-400" />
+                  )}
                 </div>
-                
-                <h4 className="text-2xl font-black text-gray-900 mb-2 tracking-tighter uppercase group-hover:text-primary-800 transition-colors truncate">{sponsor.name}</h4>
-                <div className="flex items-center gap-2 mb-6">
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent-yellow"></span>
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Supporter</span>
+                <div className="flex gap-1.5">
+                  <button 
+                    onClick={() => openEdit(sponsor)} 
+                    className="p-2 bg-neutral-100 text-neutral-600 rounded-lg hover:bg-primary-50 hover:text-primary-700 transition-colors"
+                    title="Edit Supporter"
+                  >
+                    <FiEdit3 size={15} />
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(sponsor._id)} 
+                    className="p-2 bg-neutral-100 text-neutral-500 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors"
+                    title="Delete Supporter"
+                  >
+                    <FiTrash2 size={15} />
+                  </button>
                 </div>
+              </div>
+              
+              <h4 className="text-lg font-bold text-neutral-900 mb-1 truncate">{sponsor.name}</h4>
+              <span className="text-xs text-primary-600 font-semibold mb-4 block">Official Partner</span>
 
-                {sponsor.websiteUrl && (
-                  <a href={sponsor.websiteUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700 hover:text-primary-900 transition-colors mb-7">
-                    <FiLink size={14} /> Visit website
-                  </a>
-                )}
-                
-                <div className="pt-6 border-t border-gray-50 flex items-center justify-end mt-auto">
-                    <div className="flex items-center gap-1 text-accent-green font-black text-[10px] uppercase tracking-tighter">
-                        <FiCheckCircle /> Verified
-                    </div>
-                </div>
-                
-                {/* Subtle card background pattern */}
-                <div className="absolute top-0 right-0 w-24 h-24 bg-primary-50/30 rounded-bl-[4rem] group-hover:bg-primary-100/40 transition-all"></div>
-                <button onClick={() => openEdit(sponsor)} className="absolute bottom-6 right-6 p-3 rounded-xl bg-neutral-50 text-neutral-400 hover:bg-primary-50 hover:text-primary-700 transition-colors">
-                  <FiEdit3 size={16} />
-                </button>
+              {sponsor.websiteUrl && (
+                <a 
+                  href={sponsor.websiteUrl} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-primary-600 transition-colors mt-auto pt-3 border-t border-neutral-100"
+                >
+                  <FiLink size={12} /> Visit website
+                </a>
+              )}
             </div>
           ))
         )}
@@ -181,41 +208,78 @@ const ManageSponsors = () => {
 
       <AnimatePresence>
         {isModalOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/45">
-            <motion.form onSubmit={handleSave} initial={{ scale: 0.97, y: 24 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.97, y: 24 }} className="bg-white w-full max-w-3xl rounded-[2rem] shadow-2xl p-8 relative max-h-[92vh] overflow-y-auto no-scrollbar">
-              <button type="button" onClick={() => { setIsModalOpen(false); resetForm(); }} className="absolute top-5 right-5 p-2 text-neutral-400 hover:text-neutral-700 transition-colors"><FiX size={22} /></button>
-              <div className="mb-8">
-                <h3 className="text-2xl font-semibold text-neutral-900">{editingId ? 'Edit Supporter' : 'Add Supporter'}</h3>
-                <p className="text-sm font-medium text-neutral-500 mt-1">Upload the logo and link it to the supporter website.</p>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-black/50 backdrop-blur-sm">
+            <form onSubmit={handleSave} className="bg-white w-full max-w-xl rounded-2xl shadow-2xl p-6 md:p-8 relative max-h-[92vh] overflow-y-auto">
+              <button 
+                type="button" 
+                onClick={() => { setIsModalOpen(false); resetForm(); }} 
+                className="absolute top-5 right-5 p-2 text-neutral-400 hover:text-neutral-700 transition-colors rounded-lg"
+                aria-label="Close dialog"
+              >
+                <FiX size={22} />
+              </button>
+              
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-neutral-900">{editingId ? 'Edit Supporter' : 'Add Supporter'}</h3>
+                <p className="text-sm text-neutral-500 mt-1">Upload partner organization logo and web link.</p>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div>
-                  <label className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-3 ml-1">Supporter Name</label>
-                  <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full px-6 py-4 bg-gray-50 rounded-2xl border-none outline-none font-semibold text-gray-900" placeholder="Organization or brand name" />
+                  <label className="form-label">Supporter / Organization Name *</label>
+                  <input 
+                    required 
+                    value={form.name} 
+                    onChange={(e) => setForm({ ...form, name: e.target.value })} 
+                    className="form-input" 
+                    placeholder="e.g. Kathmandu Care Foundation" 
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-3 ml-1">Website URL</label>
-                  <input value={form.websiteUrl} onChange={e => setForm({ ...form, websiteUrl: e.target.value })} className="w-full px-6 py-4 bg-gray-50 rounded-2xl border-none outline-none font-semibold text-gray-900" placeholder="https://example.org" />
+                  <label className="form-label">Website URL (Optional)</label>
+                  <input 
+                    value={form.websiteUrl} 
+                    onChange={(e) => setForm({ ...form, websiteUrl: e.target.value })} 
+                    className="form-input" 
+                    placeholder="https://example.org" 
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-3 ml-1">Logo</label>
-                  <div className="relative aspect-video bg-gray-50 rounded-[1.75rem] border-2 border-dashed border-gray-200 overflow-hidden flex items-center justify-center">
-                    {logoPreview ? <img src={logoPreview} alt="Logo preview" className="w-full h-full object-contain p-6" /> : <div className="text-gray-300"><FiUpload size={44} /></div>}
+                  <label className="form-label">Brand / Organization Logo</label>
+                  <div className="relative aspect-video bg-neutral-50 rounded-2xl border-2 border-dashed border-neutral-200 overflow-hidden flex items-center justify-center hover:border-primary-500 transition-all cursor-pointer">
+                    {logoPreview ? (
+                      <img src={logoPreview} alt="Logo preview" className="w-full h-full object-contain p-4" />
+                    ) : (
+                      <div className="text-center p-4 text-neutral-400">
+                        <FiUpload size={32} className="mx-auto mb-2 opacity-60" />
+                        <span className="text-xs">Click or drag logo file</span>
+                      </div>
+                    )}
                     <input type="file" accept="image/*" onChange={handleLogoChange} className="absolute inset-0 opacity-0 cursor-pointer" />
                   </div>
                 </div>
               </div>
 
-              <div className="pt-8 mt-8 border-t border-gray-100 flex justify-end">
-                <button type="submit" disabled={actionLoading} className="px-8 py-4 bg-primary-950 text-white rounded-2xl font-bold disabled:opacity-50">
-                  {actionLoading ? 'Saving...' : (editingId ? 'Update Supporter' : 'Create Supporter')}
+              <div className="pt-6 mt-6 border-t border-neutral-100 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setIsModalOpen(false); resetForm(); }}
+                  className="px-5 py-2.5 rounded-xl border border-neutral-200 text-neutral-700 text-sm font-semibold hover:bg-neutral-50"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={actionLoading} 
+                  className="px-6 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 disabled:opacity-50"
+                >
+                  {actionLoading ? 'Saving...' : editingId ? 'Update Supporter' : 'Create Supporter'}
                 </button>
               </div>
-            </motion.form>
-          </motion.div>
+            </form>
+          </div>
         )}
       </AnimatePresence>
       

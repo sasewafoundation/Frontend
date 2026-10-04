@@ -12,7 +12,7 @@ const ManageMessages = () => {
       const res = await api.get('/messages');
       setMessages(res.data.data || []);
     } catch (err) {
-      console.error('Failed to fetch messages', err);
+      console.error('Failed to fetch messages:', err.response?.data || err.message);
     } finally {
       setLoading(false);
     }
@@ -29,7 +29,7 @@ const ManageMessages = () => {
       await api.delete(`/messages/${id}`);
       setMessages((prev) => prev.filter((m) => m._id !== id));
     } catch (err) {
-      alert('Failed to delete message.');
+      alert(err.response?.data?.message || 'Failed to delete message.');
     }
   };
 
@@ -43,7 +43,7 @@ const ManageMessages = () => {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-semibold text-neutral-900">Messages</h2>
-            <p className="text-sm text-neutral-500 mt-1">Messages submitted from the public contact form.</p>
+            <p className="text-sm text-neutral-500 mt-1">Direct inquiries submitted through the public contact form.</p>
           </div>
           <div className="inline-flex items-center gap-2 text-sm font-medium text-primary-700 bg-primary-50 border border-primary-100 px-3 py-1.5 rounded-full">
             <FiMail size={14} />

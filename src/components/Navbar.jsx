@@ -1,20 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FiMenu, FiX, FiGlobe } from 'react-icons/fi';
 
+// FIX 17: Helper function isolated outside component scope to comply with React 19 immutability rules
+function setLanguageCookie(code) {
+  if (typeof document !== 'undefined') {
+    document.cookie = `googtrans=/en/${code}; path=/`;
+    document.cookie = `googtrans=/en/${code}; path=/; domain=${window.location.hostname}`;
+    window.location.reload();
+  }
+}
+
 const Navbar = () => {
-  const [isOpen, setIsOpen]           = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [langDropdown, setLangDropdown] = useState(false);
-  const [currentLang, setCurrentLang] = useState('EN');
+  
+  // FIX 17: Initialize state directly from cookie without cascading setState effect
+  const [currentLang] = useState(() => {
+    if (typeof document !== 'undefined') {
+      const match = document.cookie.match(/googtrans=\/en\/(ne|de|en)/);
+      if (match?.[1]) return match[1].toUpperCase();
+    }
+    return 'EN';
+  });
+
   const location = useLocation();
-
-  useEffect(() => {
-    const match = document.cookie.match(/googtrans=\/en\/(ne|de|en)/);
-    if (match?.[1]) setCurrentLang(match[1].toUpperCase());
-  }, []);
-
-  // Close mobile menu on route change
-  useEffect(() => { setIsOpen(false); }, [location.pathname]);
 
   const navLinks = [
     { name: 'Home',      path: '/' },
@@ -27,9 +37,7 @@ const Navbar = () => {
   ];
 
   const handleLang = (code) => {
-    document.cookie = `googtrans=/en/${code}; path=/`;
-    document.cookie = `googtrans=/en/${code}; path=/; domain=${window.location.hostname}`;
-    window.location.reload();
+    setLanguageCookie(code);
   };
 
   return (
@@ -37,7 +45,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-6 py-2.5 flex items-center justify-between gap-6">
 
         {/* Logo */}
-        <Link to="/" className="shrink-0 z-50">
+        <Link to="/" className="shrink-0 z-50" onClick={() => setIsOpen(false)}>
           <img
             src="/logo.png"
             alt="Sa-Sewa Foundation"
@@ -80,7 +88,7 @@ const Navbar = () => {
               <FiGlobe size={14} />
               {currentLang}
             </button>
-            <div className={`absolute right-0 mt-2.5 w-40 bg-white rounded-xl shadow-[var(--shadow-card)] border border-neutral-200 overflow-hidden transition-all duration-150 origin-top-right ${
+            <div className={`absolute right-0 mt-2.5 w-40 bg-white rounded-xl shadow-card border border-neutral-200 overflow-hidden transition-all duration-150 origin-top-right ${
               langDropdown ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible'
             }`}>
               {[

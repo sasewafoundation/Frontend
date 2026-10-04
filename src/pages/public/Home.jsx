@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowRight, FiCheck } from 'react-icons/fi';
 import api from '../../services/api';
@@ -6,16 +6,24 @@ import { getMediaUrl } from '../../utils/mediaUrl';
 import Seo from '../../components/Seo';
 import Pic1 from '../../assets/Pic1.jpeg';
 
-/* ── Scroll-reveal hook ── */
+// FIX 17: Use callback ref pattern to avoid React 19 react-hooks/refs compiler warnings
 const useReveal = (threshold = 0.12) => {
-  const ref = useRef(null);
   const [visible, setVisible] = useState(false);
+  const [node, setNode] = useState(null);
+
   useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold });
-    if (ref.current) obs.observe(ref.current);
+    if (!node) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) {
+        setVisible(true);
+        obs.disconnect();
+      }
+    }, { threshold });
+    obs.observe(node);
     return () => obs.disconnect();
-  }, [threshold]);
-  return { ref, visible };
+  }, [node, threshold]);
+
+  return [setNode, visible];
 };
 
 const Home = () => {
@@ -33,23 +41,24 @@ const Home = () => {
         setProjects(pR.data.data?.slice(0, 3) || []);
         setSponsors(sR.data.data || []);
         setBlogs(bR.data.data?.slice(0, 3) || []);
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error('Failed to load homepage resources:', e);
+      }
     })();
   }, []);
 
-  const aboutReveal = useReveal();
-  const projReveal  = useReveal();
-  const blogReveal  = useReveal();
+  const [aboutRef, aboutVisible] = useReveal();
+  const [projRef, projVisible]   = useReveal();
+  const [blogRef, blogVisible]   = useReveal();
 
   return (
     <div className="w-full overflow-x-hidden">
       <Seo title="Sa-Sewa Foundation" />
 
       {/* ═══════════════════════════════════════════════ */}
-      {/* HERO — refined storytelling */}
+      {/* HERO                                            */}
       {/* ═══════════════════════════════════════════════ */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
-
         {/* Background image */}
         <div className="absolute inset-0 z-0">
           <img
@@ -59,8 +68,7 @@ const Home = () => {
             onLoad={() => setHeroLoaded(true)}
             style={{ filter: 'brightness(0.82) saturate(0.97) blur(0.5px)' }}
           />
-          {/* Subtle readability layer */}
-          <div className="absolute inset-0 bg-black/18" />
+          <div className="absolute inset-0 bg-black/20" />
         </div>
 
         {/* Content */}
@@ -69,7 +77,6 @@ const Home = () => {
             className="max-w-3xl transition-all duration-700"
             style={{ opacity: heroLoaded ? 1 : 0, transform: heroLoaded ? 'translateY(0)' : 'translateY(20px)' }}
           >
-            {/* Headline */}
             <h1 className="text-5xl md:text-6xl lg:text-[4.35rem] font-bold text-white leading-[1.05] tracking-tight mb-6">
               Standing with{' '}
               <span
@@ -88,10 +95,9 @@ const Home = () => {
             </h1>
 
             <p className="text-lg text-white/80 font-normal leading-relaxed mb-10 max-w-2xl">
-              Sa Sewa Foundation Nepal is a not-for-profit organization serving communities through practical action and partnership.
+              Sa Sewa Foundation Nepal is a not-for-profit organization serving communities through practical action, sustainable livelihood support, and partnership.
             </p>
 
-            {/* CTA row */}
             <div className="flex flex-wrap items-center gap-3 mb-2">
               <Link to="/donation" className="btn-primary text-base px-8 py-4 shadow-[0_12px_28px_-12px_rgba(196,74,16,0.62)]">
                 Support Our Work <FiArrowRight size={16} />
@@ -107,27 +113,25 @@ const Home = () => {
         <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
       </section>
 
-
       {/* ═══════════════════════════════════════════════ */}
       {/* ABOUT PREVIEW                                  */}
       {/* ═══════════════════════════════════════════════ */}
-      <section className="py-28 bg-neutral-50" ref={aboutReveal.ref}>
+      <section className="py-28 bg-neutral-50" ref={aboutRef}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
             {/* Image collage */}
             <div
-              className={`relative transition-all duration-700 ${aboutReveal.visible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}
+              className={`relative transition-all duration-700 ${aboutVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}
             >
-              <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-[var(--shadow-float)]">
+              <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-float">
                 <img
                   src={Pic1}
                   alt="Children learning at a Sa-Sewa programme"
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-                {/* Floating info card */}
-                <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md rounded-2xl shadow-[var(--shadow-card)] p-5 flex items-center gap-4">
+                <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md rounded-2xl shadow-card p-5 flex items-center gap-4">
                   <div className="w-12 h-12 bg-primary-600 rounded-xl flex items-center justify-center shrink-0">
                     <FiCheck size={22} className="text-white" />
                   </div>
@@ -137,14 +141,11 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-              {/* Decorative accent */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary-600/10 rounded-full blur-xl pointer-events-none" />
-              <div className="absolute -bottom-6 -left-6 w-40 h-40 bg-accent-teal/10 rounded-full blur-2xl pointer-events-none" />
             </div>
 
             {/* Text */}
             <div
-              className={`transition-all duration-700 delay-200 ${aboutReveal.visible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}
+              className={`transition-all duration-700 delay-200 ${aboutVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}
             >
               <span className="section-label">Who we are</span>
               <h2 className="section-title mb-6">
@@ -157,7 +158,6 @@ const Home = () => {
                 Operating within Nepal’s legal framework, we support community development and social welfare initiatives in partnership with authorities and stakeholders.
               </p>
 
-              {/* Feature list */}
               <ul className="space-y-3 mb-10">
                 {[
                   'Registered under Nepal’s Company Act 2063',
@@ -181,7 +181,6 @@ const Home = () => {
         </div>
       </section>
 
-
       {/* ═══════════════════════════════════════════════ */}
       {/* SPONSORS STRIP                                 */}
       {/* ═══════════════════════════════════════════════ */}
@@ -192,13 +191,13 @@ const Home = () => {
               Supported By
             </p>
             <div className="flex flex-wrap justify-center items-center gap-6 lg:gap-10">
-              {sponsors.map(s => (
+              {sponsors.map((s) => (
                 <a
                   key={s._id}
                   href={s.websiteUrl || '#'}
                   target={s.websiteUrl ? '_blank' : '_self'}
                   rel={s.websiteUrl ? 'noreferrer' : undefined}
-                  className="group flex items-center justify-center h-20 min-w-36 px-6 rounded-2xl border border-neutral-100 bg-white shadow-sm hover:shadow-[var(--shadow-card)] transition-all duration-300"
+                  className="group flex items-center justify-center h-20 min-w-36 px-6 rounded-2xl border border-neutral-100 bg-white shadow-sm hover:shadow-card transition-all duration-300"
                   aria-label={s.name}
                 >
                   {s.logo ? (
@@ -213,15 +212,14 @@ const Home = () => {
         </section>
       )}
 
-
       {/* ═══════════════════════════════════════════════ */}
       {/* FEATURED PROJECTS                              */}
       {/* ═══════════════════════════════════════════════ */}
-      <section className="py-28 bg-white" ref={projReveal.ref}>
+      <section className="py-28 bg-white" ref={projRef}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-end gap-4 mb-14">
             <div
-              className={`transition-all duration-600 ${projReveal.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+              className={`transition-all duration-600 ${projVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
             >
               <span className="section-label">Our Work</span>
               <h2 className="section-title">Initiatives making<br />a real difference.</h2>
@@ -241,13 +239,13 @@ const Home = () => {
                   to={`/projects/${proj.slug || proj._id}`}
                   key={proj._id}
                   className={`group card flex flex-col h-full transition-all duration-500 ${
-                    projReveal.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+                    projVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
                   }`}
                   style={{ transitionDelay: `${i * 100}ms` }}
                 >
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <img
-                      src={proj.images?.[0] || `https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80`}
+                      src={getMediaUrl(proj.images?.[0]) || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80'}
                       alt={proj.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       loading="lazy"
@@ -283,15 +281,14 @@ const Home = () => {
         </div>
       </section>
 
-
       {/* ═══════════════════════════════════════════════ */}
       {/* LATEST STORIES (BLOG)                         */}
       {/* ═══════════════════════════════════════════════ */}
-      <section className="py-28 bg-neutral-50 border-t border-neutral-100" ref={blogReveal.ref}>
+      <section className="py-28 bg-neutral-50 border-t border-neutral-100" ref={blogRef}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-end gap-4 mb-14">
             <div
-              className={`transition-all duration-600 ${blogReveal.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+              className={`transition-all duration-600 ${blogVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
             >
               <span className="section-label">Stories & Updates</span>
               <h2 className="section-title">From the field.</h2>
@@ -311,7 +308,7 @@ const Home = () => {
                   to={`/blog/${post.slug || post._id}`}
                   key={post._id}
                   className={`group card flex flex-col h-full transition-all duration-500 ${
-                    blogReveal.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+                    blogVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
                   }`}
                   style={{ transitionDelay: `${i * 100}ms` }}
                 >
@@ -350,7 +347,6 @@ const Home = () => {
         </div>
       </section>
 
-
       {/* ═══════════════════════════════════════════════ */}
       {/* DONATE CTA BANNER                             */}
       {/* ═══════════════════════════════════════════════ */}
@@ -363,8 +359,6 @@ const Home = () => {
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-br from-primary-950/90 via-primary-900/80 to-primary-800/70" />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-600/20 rounded-full blur-[120px] translate-x-1/3 -translate-y-1/2 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent-gold/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
 
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
           <span className="inline-block text-[11px] font-semibold text-primary-300 uppercase tracking-[0.18em] border border-primary-700 bg-primary-900/50 rounded-full px-4 py-1.5 mb-8">
@@ -381,7 +375,7 @@ const Home = () => {
             <Link to="/donation" className="btn-white text-base px-9 py-4">
               Donate Now <FiArrowRight size={16} />
             </Link>
-              <Link to="/join-us" className="btn-ghost text-base px-9 py-4">
+            <Link to="/join-us" className="btn-ghost text-base px-9 py-4">
               Join Us
             </Link>
           </div>

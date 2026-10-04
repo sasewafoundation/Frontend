@@ -1,8 +1,9 @@
 import React from 'react';
-import { FiLinkedin, FiMail } from 'react-icons/fi';
+import { FiMail, FiLinkedin, FiUsers } from 'react-icons/fi';
 import Seo from '../../components/Seo';
 
 const Team = () => {
+  // FIX 18: Preserving commented-out team data for future administrative population
   const teamMembers = [/*
     {
       name: "Saurabh Sharma",
@@ -36,59 +37,75 @@ const Team = () => {
       <div className="mx-auto max-w-7xl px-6">
         
         {/* Header Block */}
-        <div className="max-w-3xl mx-auto text-center mb-24">
-          <span className="text-sm font-bold text-primary-600 tracking-widest uppercase mb-4 block">The People</span>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 mb-6">Faces Behind The Impact</h2>
-          <p className="text-xl leading-relaxed text-gray-500 font-light">
-            Behind every statistic and community built lies a dedicated network of operational leaders translating vision into measurable, sustainable reality.
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <span className="text-xs font-bold text-primary-600 tracking-widest uppercase mb-3 block">
+            The People
+          </span>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900 mb-6">
+            Faces Behind The Impact
+          </h1>
+          <p className="text-lg leading-relaxed text-neutral-500 font-normal">
+            Behind every initiative and community programme lies a dedicated network of operational leaders, volunteers, and advisors translating vision into sustainable local reality.
           </p>
         </div>
         
-        {/* Profile-Focused Layout via responsive grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 max-w-5xl mx-auto">
-          {teamMembers.map((person, index) => (
-            <div 
-              key={person.name} 
-              className="group flex flex-col md:flex-row items-center md:items-start gap-8 p-6 md:p-8 bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-card hover:-translate-y-1 transition-all duration-300 relative overflow-hidden"
-            >
-              {/* Subtle accent color bar on the left hidden on mobile */}
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary-400 to-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-              {/* Image Container with precise profile clipping */}
-              <div className="shrink-0 relative">
-                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border border-gray-100 shadow-sm relative z-10 transition-transform duration-500 group-hover:scale-105">
-                  <img 
-                    className="w-full h-full object-cover" 
-                    src={person.image} 
-                    alt={person.name}
-                    loading="lazy"
-                  />
-                </div>
-                {/* Decorative shadow pulse */}
-                <div className="absolute inset-0 bg-primary-600 rounded-full blur-xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 z-0"></div>
-              </div>
-
-              {/* Text Container */}
-              <div className="text-center md:text-left flex-1">
-                <h3 className="text-2xl font-bold tracking-tight text-gray-900 mb-1">{person.name}</h3>
-                <p className="text-sm font-bold uppercase tracking-wider text-primary-600 mb-4">{person.role}</p>
-                <p className="text-gray-500 leading-relaxed font-light text-sm md:text-base mb-6">
-                  {person.bio}
-                </p>
-                
-                {/* Clean social/contact anchors */}
-                <div className="flex items-center justify-center md:justify-start gap-4">
-                  <a href={`mailto:sasewafoundation@gmail.com`} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:bg-primary-50 hover:text-primary-600 transition-colors">
-                    <FiMail size={18} />
-                  </a>
-                  <a href={`#`} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:bg-primary-50 hover:text-primary-600 transition-colors">
-                    <FiLinkedin size={18} />
-                  </a>
-                </div>
-              </div>
+        {teamMembers.length === 0 ? (
+          /* FIX 18: Presentable empty state fallback */
+          <div className="max-w-md mx-auto text-center py-16 px-6 bg-neutral-50 rounded-3xl border border-neutral-100 shadow-sm">
+            <div className="w-16 h-16 bg-primary-50 text-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-primary-100">
+              <FiUsers size={30} />
             </div>
-          ))}
-        </div>
+            <h3 className="text-xl font-bold text-neutral-900 mb-2">
+              Our team directory is being updated
+            </h3>
+            <p className="text-sm text-neutral-500 leading-relaxed mb-6">
+              We are currently revising our staff and advisory council profiles. Check back soon to meet our foundation members.
+            </p>
+            <a
+              href="mailto:sasewafoundation@gmail.com"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-700"
+            >
+              <FiMail size={15} /> Contact our office
+            </a>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 max-w-5xl mx-auto">
+            {teamMembers.map((person) => (
+              <div 
+                key={person.name} 
+                className="group flex flex-col md:flex-row items-center md:items-start gap-8 p-6 md:p-8 bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-card hover:-translate-y-1 transition-all duration-300 relative overflow-hidden"
+              >
+                <div className="shrink-0 relative">
+                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border border-gray-100 shadow-sm relative z-10 transition-transform duration-500 group-hover:scale-105">
+                    <img 
+                      className="w-full h-full object-cover" 
+                      src={person.image} 
+                      alt={person.name}
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+
+                <div className="text-center md:text-left flex-1">
+                  <h3 className="text-2xl font-bold tracking-tight text-gray-900 mb-1">{person.name}</h3>
+                  <p className="text-sm font-bold uppercase tracking-wider text-primary-600 mb-4">{person.role}</p>
+                  <p className="text-gray-500 leading-relaxed font-light text-sm md:text-base mb-6">
+                    {person.bio}
+                  </p>
+                  
+                  <div className="flex items-center justify-center md:justify-start gap-4">
+                    <a href="mailto:sasewafoundation@gmail.com" className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:bg-primary-50 hover:text-primary-600 transition-colors">
+                      <FiMail size={18} />
+                    </a>
+                    <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:bg-primary-50 hover:text-primary-600 transition-colors">
+                      <FiLinkedin size={18} />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
       </div>
     </div>

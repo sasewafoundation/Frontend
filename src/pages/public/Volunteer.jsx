@@ -40,23 +40,31 @@ const Volunteer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // FIX 10: Client-side validation for phone number (at least 7 digits)
+    const cleanPhone = formData.phone.replace(/[^\d]/g, '');
+    if (cleanPhone.length < 7) {
+      setStatus({ type: 'error', text: 'Please provide a valid phone number (at least 7 digits).' });
+      return;
+    }
+
     setStatus({ type: 'loading', text: 'Submitting your application…' });
     try {
       const payload = new FormData();
-      payload.append('name', formData.name);
-      payload.append('email', formData.email);
-      payload.append('phone', formData.phone);
-      payload.append('skills', formData.skills);
+      payload.append('name', formData.name.trim());
+      payload.append('email', formData.email.trim());
+      payload.append('phone', formData.phone.trim());
+      payload.append('skills', formData.skills.trim());
       payload.append('applicationType', roleMeta.applicationType);
       payload.append('availability', formData.availability);
-      payload.append('message', formData.message);
+      payload.append('message', formData.message.trim());
 
       if (cvFile) {
         payload.append('cvFile', cvFile);
       }
 
       await api.post('/volunteers', payload);
-      setStatus({ type: 'success', text: 'Thank you! We\'ll be in touch soon.' });
+      setStatus({ type: 'success', text: 'Thank you! We will review your application and be in touch soon.' });
       setFormData({ name: '', email: '', phone: '', skills: '', availability: 'Hybrid', message: '' });
       setCvFile(null);
     } catch (err) {
@@ -213,9 +221,10 @@ const Volunteer = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="form-label">Phone Number</label>
+                  {/* FIX 10: Phone is required with explicit indicator */}
+                  <label className="form-label">Phone Number *</label>
                   <input
-                    type="tel" className="form-input"
+                    type="tel" required className="form-input"
                     placeholder="+977 98XXXXXXXX"
                     value={formData.phone} onChange={handleChange('phone')}
                   />
