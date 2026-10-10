@@ -30,7 +30,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div className="pl-0 md:pl-10">
-            <h4 className="text-white font-bold mb-8 uppercase tracking-widest text-xs">Quick Links</h4>
+            <h3 className="text-white font-bold mb-8 uppercase tracking-widest text-xs">Quick Links</h3>
             <ul className="space-y-4">
               <li><Link to="/about" className="text-sm hover:text-white transition-colors">About Us</Link></li>
               <li><Link to="/projects" className="text-sm hover:text-white transition-colors">Projects</Link></li>
@@ -42,7 +42,7 @@ const Footer = () => {
 
           {/* Legal/Policies */}
           <div>
-            <h4 className="text-white font-bold mb-8 uppercase tracking-widest text-xs">Organization</h4>
+            <h3 className="text-white font-bold mb-8 uppercase tracking-widest text-xs">Organization</h3>
             <ul className="space-y-4">
               <li><Link to="#" className="text-sm hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link to="#" className="text-sm hover:text-white transition-colors">Terms of Service</Link></li>
@@ -52,7 +52,7 @@ const Footer = () => {
 
           {/* Contact Details */}
           <div>
-            <h4 className="text-white font-bold mb-8 uppercase tracking-widest text-xs">Contact Us</h4>
+            <h3 className="text-white font-bold mb-8 uppercase tracking-widest text-xs">Contact Us</h3>
             <ul className="space-y-4 text-sm font-light text-primary-200">
               <li className="flex items-start">
                 <span className="leading-relaxed text-white">Tarakeshwor-7<br/>Kathmandu<br/>Nepal</span>

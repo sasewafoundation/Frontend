@@ -26,8 +26,6 @@ const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
 const ManageProjects = lazy(() => import('./pages/admin/ManageProjects'));
 const ManageVolunteers = lazy(() => import('./pages/admin/ManageVolunteers'));
 const ManageBlogs = lazy(() => import('./pages/admin/ManageBlogs'));
-// FIX 6: ManageDonations route
-const ManageDonations = lazy(() => import('./pages/admin/ManageDonations'));
 const ManageSponsors = lazy(() => import('./pages/admin/ManageSponsors'));
 const ManageMessages = lazy(() => import('./pages/admin/ManageMessages'));
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
@@ -65,8 +63,7 @@ function App() {
               <Route path="projects" element={<ManageProjects />} />
               <Route path="volunteers" element={<ManageVolunteers />} />
               <Route path="blogs" element={<ManageBlogs />} />
-              {/* FIX 6: Admin route for ManageDonations */}
-              <Route path="donations" element={<ManageDonations />} />
+              <Route path="donations" element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="supporters" element={<ManageSponsors />} />
               <Route path="messages" element={<ManageMessages />} />
             </Route>

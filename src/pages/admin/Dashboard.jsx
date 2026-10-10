@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
-import { FiFileText, FiUsers, FiEdit3, FiArrowRight, FiSmile, FiMail, FiDollarSign } from 'react-icons/fi';
+import { FiFileText, FiUsers, FiEdit3, FiArrowRight, FiSmile, FiMail } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import LogoLoader from '../../components/LogoLoader';
 
@@ -9,7 +9,6 @@ const Dashboard = () => {
     projects: 0,
     volunteers: 0,
     blogs: 0,
-    donations: 0,
     messages: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -17,12 +16,10 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // FIX 6: Include /donations in dashboard metrics
-        const [projRes, volRes, blogRes, donRes, msgRes] = await Promise.allSettled([
+        const [projRes, volRes, blogRes, msgRes] = await Promise.allSettled([
           api.get('/projects'),
           api.get('/volunteers'),
           api.get('/blog'),
-          api.get('/donations'),
           api.get('/messages'),
         ]);
 
@@ -30,7 +27,6 @@ const Dashboard = () => {
           projects: projRes.status === 'fulfilled' ? (projRes.value.data.data?.length || 0) : 0,
           volunteers: volRes.status === 'fulfilled' ? (volRes.value.data.data?.length || 0) : 0,
           blogs: blogRes.status === 'fulfilled' ? (blogRes.value.data.data?.length || 0) : 0,
-          donations: donRes.status === 'fulfilled' ? (donRes.value.data.data?.length || 0) : 0,
           messages: msgRes.status === 'fulfilled' ? (msgRes.value.data.data?.length || 0) : 0,
         });
       } catch (error) {
@@ -43,12 +39,10 @@ const Dashboard = () => {
     fetchStats();
   }, []);
 
-  // FIX 6: Include Donations card in admin dashboard overview
   const statCards = [
     { label: 'Foundation Projects', value: stats.projects, icon: <FiFileText size={20}/>, link: '/admin/projects' },
     { label: 'Volunteer Applicants', value: stats.volunteers, icon: <FiUsers size={20}/>, link: '/admin/volunteers' },
     { label: 'Stories & Articles', value: stats.blogs, icon: <FiEdit3 size={20}/>, link: '/admin/blogs' },
-    { label: 'Donation Pledges', value: stats.donations, icon: <FiDollarSign size={20}/>, link: '/admin/donations' },
     { label: 'Contact Messages', value: stats.messages, icon: <FiMail size={20}/>, link: '/admin/messages' },
   ];
 
@@ -62,13 +56,13 @@ const Dashboard = () => {
           <h2 className="text-sm font-semibold text-primary-700 mb-1">Administrator Console</h2>
           <h3 className="text-2xl font-semibold text-neutral-900 mb-2">Operational Overview</h3>
           <p className="text-neutral-500 leading-relaxed text-sm">
-            Track foundation operations at a glance: projects, volunteer applications, stories, donations, and inquiries.
+            Track foundation operations at a glance: projects, volunteer applications, stories, and inquiries.
           </p>
         </div>
         <FiSmile size={46} className="text-primary-100 hidden sm:block" />
       </section>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {statCards.map((stat, i) => (
           <Link 
             key={i} 

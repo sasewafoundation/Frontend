@@ -94,7 +94,7 @@ const Home = () => {
               through practical local action.
             </h1>
 
-            <p className="text-lg text-white/80 font-normal leading-relaxed mb-10 max-w-2xl">
+            <p className="text-lg text-primary-100 font-normal leading-relaxed mb-10 max-w-2xl">
               Sa Sewa Foundation Nepal is a not-for-profit organization serving communities through practical action, sustainable livelihood support, and partnership.
             </p>
 
@@ -164,7 +164,7 @@ const Home = () => {
                   'Guided by SWC, local government, and tax regulations',
                   'Focused on education, health, livelihoods, and resilience',
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-neutral-700 font-medium">
+                  <li key={i} className="flex items-center gap-3 text-sm text-neutral-600 font-medium">
                     <span className="w-5 h-5 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center shrink-0">
                       <FiCheck size={11} />
                     </span>
@@ -187,7 +187,7 @@ const Home = () => {
       {sponsors.length > 0 && (
         <section className="py-14 bg-white border-t border-neutral-100">
           <div className="max-w-7xl mx-auto px-6 text-center">
-            <p className="text-[11px] font-semibold text-neutral-400 uppercase tracking-[0.18em] mb-10">
+            <p className="text-xs font-semibold text-neutral-500 uppercase tracking-[0.18em] mb-10">
               Supported By
             </p>
             <div className="flex flex-wrap justify-center items-center gap-6 lg:gap-10">
@@ -226,7 +226,7 @@ const Home = () => {
             </div>
             <Link
               to="/projects"
-              className="text-sm font-semibold text-primary-600 hover:text-primary-800 flex items-center gap-1.5 transition-colors shrink-0 group"
+              className="text-sm font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1.5 transition-colors shrink-0 group"
             >
               All projects <FiArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
@@ -290,12 +290,12 @@ const Home = () => {
             <div
               className={`transition-all duration-600 ${blogVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
             >
-              <span className="section-label">Stories & Updates</span>
+              <span className="section-label">Stories</span>
               <h2 className="section-title">From the field.</h2>
             </div>
             <Link
               to="/blog"
-              className="text-sm font-semibold text-primary-600 hover:text-primary-800 flex items-center gap-1.5 transition-colors shrink-0 group"
+              className="text-sm font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1.5 transition-colors shrink-0 group"
             >
               All articles <FiArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
@@ -323,7 +323,7 @@ const Home = () => {
                     />
                   </div>
                   <div className="p-6 flex flex-col flex-grow">
-                    <p className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mb-3">
+                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
                       {new Date(post.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                     <h3 className="text-[15px] font-bold text-neutral-900 mb-2 group-hover:text-primary-600 transition-colors leading-snug line-clamp-2 flex-grow">
@@ -341,7 +341,7 @@ const Home = () => {
             </div>
           ) : (
             <div className="text-center py-16 border border-dashed border-neutral-200 rounded-2xl">
-              <p className="text-sm text-neutral-400">No articles yet — check back soon.</p>
+              <p className="text-sm text-neutral-500">No articles yet — check back soon.</p>
             </div>
           )}
         </div>
@@ -361,13 +361,13 @@ const Home = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-primary-950/90 via-primary-900/80 to-primary-800/70" />
 
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-          <span className="inline-block text-[11px] font-semibold text-primary-300 uppercase tracking-[0.18em] border border-primary-700 bg-primary-900/50 rounded-full px-4 py-1.5 mb-8">
+          <span className="inline-block text-xs font-semibold text-primary-200 uppercase tracking-[0.18em] border border-primary-700 bg-primary-900/50 rounded-full px-4 py-1.5 mb-8">
             Transparent · Accountable · Impactful
           </span>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-6 leading-[1.08]">
             Your generosity<br />changes real lives.
           </h2>
-          <p className="text-lg text-primary-200/80 font-normal mb-12 max-w-xl mx-auto leading-relaxed">
+          <p className="text-lg text-primary-100 font-normal mb-12 max-w-xl mx-auto leading-relaxed">
             Every rupee reaches our field programmes — no hidden fees, no corporate overhead.
             Just direct, measurable impact in Nepal's communities.
           </p>

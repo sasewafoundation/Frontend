@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Navigate, useNavigate, Link, useLocation } from 'react-router-dom';
-import { FiGrid, FiUsers, FiFileText, FiLogOut, FiEdit, FiMail, FiAward, FiDollarSign, FiMenu, FiX } from 'react-icons/fi';
+import { FiGrid, FiUsers, FiFileText, FiLogOut, FiEdit, FiMail, FiAward, FiMenu, FiX } from 'react-icons/fi';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -18,13 +18,11 @@ const AdminLayout = () => {
     navigate('/admin/login');
   };
 
-  // FIX 6: Include Donations in admin navigation
   const navItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: <FiGrid size={20}/> },
     { name: 'Projects', path: '/admin/projects', icon: <FiFileText size={20}/> },
     { name: 'Volunteers', path: '/admin/volunteers', icon: <FiUsers size={20}/> },
     { name: 'Blog Manage', path: '/admin/blogs', icon: <FiEdit size={20}/> },
-    { name: 'Donations', path: '/admin/donations', icon: <FiDollarSign size={20}/> },
     { name: 'Supporters', path: '/admin/supporters', icon: <FiAward size={20}/> },
     { name: 'Messages', path: '/admin/messages', icon: <FiMail size={20}/> },
   ];
