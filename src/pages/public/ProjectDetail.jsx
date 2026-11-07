@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiArrowLeft, FiMapPin, FiCalendar, FiUsers, FiArrowRight, FiImage, FiYoutube } from 'react-icons/fi';
+import { FiArrowLeft, FiMapPin, FiCalendar, FiUsers, FiArrowRight, FiImage, FiYoutube, FiGlobe } from 'react-icons/fi';
 import api from '../../services/api';
 import { getMediaUrl } from '../../utils/mediaUrl';
 import Seo from '../../components/Seo';
@@ -17,6 +17,7 @@ const getYoutubeEmbedUrl = (url) => {
 const ProjectDetail = () => {
   const { slug } = useParams();
   const [project, setProject] = useState(null);
+  const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
   const [activeImg, setActiveImg] = useState(0);
@@ -30,7 +31,17 @@ const ProjectDetail = () => {
         } catch {
           res = await api.get(`/projects/${slug}`);
         }
-        setProject(res.data.data || res.data);
+        const projectData = res.data.data || res.data;
+        setProject(projectData);
+
+        if (projectData?._id && projectData?.mapSettings?.mapEnabled) {
+          try {
+            const locRes = await api.get(`/projects/${projectData._id}/locations`);
+            setLocations(locRes.data.data || []);
+          } catch (e) {
+            console.error('Error fetching project locations:', e);
+          }
+        }
       } catch (err) {
         console.error('Error fetching project details:', err.response?.data || err.message);
         setError('Project not found.');
@@ -68,6 +79,11 @@ const ProjectDetail = () => {
     'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1200&q=80',
   ];
   const featuredImage = images[activeImg] || images[0];
+
+  const hasLocations = locations.length > 0;
+  const avgProgress = hasLocations
+    ? Math.round(locations.reduce((sum, l) => sum + (Number(l.progressPercent) || 0), 0) / locations.length)
+    : 0;
 
   return (
     <div className="bg-white w-full overflow-hidden">
@@ -137,8 +153,89 @@ const ProjectDetail = () => {
       )}
 
       {/* ── Content ── */}
-      <section className="py-16 px-6">
+      <section className="py-14 px-6">
         <div className="max-w-7xl mx-auto">
+
+          {/* ── Project Map & Progress (Simple, Clean, Professional) ── */}
+          {project.mapSettings?.mapEnabled && (
+            <div className="mb-14 rounded-2xl border border-neutral-200 bg-white p-6 sm:p-8 md:p-10 shadow-sm">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-8 border-b border-neutral-100">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary-50 text-primary-700 border border-primary-200/60 uppercase tracking-wider">
+                    <FiMapPin className="text-primary-600" /> Live Field Tracker
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight">
+                    Project Map &amp; Progress
+                  </h2>
+                  <p className="text-base text-neutral-600 max-w-2xl leading-relaxed">
+                    Explore our localized community sites in{' '}
+                    <span className="font-semibold text-neutral-900">
+                      {project.mapSettings?.regionName || 'Nuwakot'} District
+                    </span>
+                    . View field coordinates, live milestone progress, and verified site records on the interactive map.
+                  </p>
+                </div>
+
+                <div className="shrink-0 pt-2 lg:pt-0">
+                  <a
+                    href={`${(import.meta.env.VITE_MAPS_URL || 'https://maps.sasewa.org.np').replace(/\/+$/, '')}/${project.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2.5 bg-primary-600 hover:bg-primary-700 active:scale-95 text-white font-bold text-sm sm:text-base px-7 py-3.5 rounded-full shadow-md hover:shadow-lg transition-all"
+                  >
+                    <FiMapPin size={18} />
+                    Open Project Map
+                    <FiArrowRight size={18} />
+                  </a>
+                </div>
+              </div>
+
+              {/* Progress & Summary Metrics */}
+              <div className="pt-6 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                <div className="md:col-span-7">
+                  <div className="flex justify-between items-center mb-2.5">
+                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+                      Overall Milestone Progress
+                    </span>
+                    <span className="text-sm font-extrabold text-primary-700">
+                      {hasLocations && avgProgress > 0 ? `${avgProgress}% Completed` : 'In Progress (Active)'}
+                    </span>
+                  </div>
+                  <div className="w-full h-3 bg-neutral-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-primary-600 to-amber-500 rounded-full transition-all duration-700"
+                      style={{ width: `${hasLocations && avgProgress > 0 ? avgProgress : 20}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="md:col-span-5 flex flex-wrap items-center md:justify-end gap-6 text-sm">
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Target Region</div>
+                    <div className="font-semibold text-neutral-900 mt-0.5">
+                      {project.mapSettings?.regionName || 'Nuwakot'} District
+                    </div>
+                  </div>
+                  {hasLocations && (
+                    <div className="border-l border-neutral-200 pl-6">
+                      <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Field Sites</div>
+                      <div className="font-semibold text-neutral-900 mt-0.5">
+                        {locations.length} Locations
+                      </div>
+                    </div>
+                  )}
+                  <div className="border-l border-neutral-200 pl-6">
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Status</div>
+                    <div className="font-semibold text-emerald-700 mt-0.5 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      Active
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
 
             {/* Main content */}
@@ -192,15 +289,15 @@ const ProjectDetail = () => {
 
             {/* Info sidebar */}
             <div className="space-y-6">
-              <div className="bg-neutral-50 rounded-3xl border border-neutral-100 p-7">
+              <div className="bg-neutral-50 rounded-3xl border border-neutral-200/80 p-7">
                 <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-widest mb-6">Overview</h3>
                 <div className="space-y-4">
                   {project.projectType && (
                     <div className="flex items-start gap-3">
                       <FiImage size={16} className="text-primary-600 mt-1 shrink-0" />
                       <div>
-                        <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Type</div>
-                        <div className="text-sm text-neutral-700 font-medium mt-0.5">{project.projectType}</div>
+                        <div className="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Type</div>
+                        <div className="text-sm text-neutral-900 font-semibold mt-0.5">{project.projectType}</div>
                       </div>
                     </div>
                   )}
@@ -208,8 +305,8 @@ const ProjectDetail = () => {
                     <div className="flex items-start gap-3">
                       <FiMapPin size={16} className="text-primary-600 mt-1 shrink-0" />
                       <div>
-                        <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Location</div>
-                        <div className="text-sm text-neutral-700 font-medium mt-0.5">{project.location}</div>
+                        <div className="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Location</div>
+                        <div className="text-sm text-neutral-900 font-semibold mt-0.5">{project.location}</div>
                       </div>
                     </div>
                   )}
@@ -217,8 +314,8 @@ const ProjectDetail = () => {
                     <div className="flex items-start gap-3">
                       <FiCalendar size={16} className="text-primary-600 mt-1 shrink-0" />
                       <div>
-                        <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Recorded Date</div>
-                        <div className="text-sm text-neutral-700 font-medium mt-0.5">
+                        <div className="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Recorded Date</div>
+                        <div className="text-sm text-neutral-900 font-semibold mt-0.5">
                           {new Date(project.startDate || project.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
                         </div>
                       </div>
@@ -228,23 +325,25 @@ const ProjectDetail = () => {
                     <div className="flex items-start gap-3">
                       <FiUsers size={16} className="text-primary-600 mt-1 shrink-0" />
                       <div>
-                        <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Volunteers</div>
-                        <div className="text-sm text-neutral-700 font-medium mt-0.5">{project.volunteers}</div>
+                        <div className="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Volunteers</div>
+                        <div className="text-sm text-neutral-900 font-semibold mt-0.5">{project.volunteers}</div>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* CTA */}
-              <div className="bg-primary-600 rounded-3xl p-7 text-white shadow-card">
-                <h3 className="font-bold text-lg mb-2">Support this initiative</h3>
-                <p className="text-sm text-primary-100 leading-relaxed mb-6">
-                  Your contribution helps deliver practical local solutions directly to communities across Nepal.
-                </p>
-                <Link to="/donation" className="btn-white w-full justify-center">
-                  Donate Now <FiArrowRight size={15} />
-                </Link>
+              {/* CTA - Support this initiative (Aligned to brand terracotta palette) */}
+              <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-3xl p-7 text-white shadow-card border border-primary-800/20 relative overflow-hidden">
+                <div className="relative z-10">
+                  <h3 className="font-extrabold text-xl text-white mb-2 tracking-tight">Support this initiative</h3>
+                  <p className="text-sm text-primary-50 leading-relaxed mb-6 font-medium">
+                    Your contribution helps deliver practical local solutions directly to communities across Nepal.
+                  </p>
+                  <Link to="/donation" className="btn-white w-full justify-center font-bold text-primary-950 hover:bg-primary-50 shadow-md">
+                    Donate Now <FiArrowRight size={15} />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

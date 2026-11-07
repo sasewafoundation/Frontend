@@ -24,6 +24,7 @@ const NotFound = lazy(() => import('./pages/public/NotFound'));
 const AdminLogin = lazy(() => import('./pages/admin/Login'));
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
 const ManageProjects = lazy(() => import('./pages/admin/ManageProjects'));
+const ManageSchools = lazy(() => import('./pages/admin/ManageSchools'));
 const ManageVolunteers = lazy(() => import('./pages/admin/ManageVolunteers'));
 const ManageBlogs = lazy(() => import('./pages/admin/ManageBlogs'));
 const ManageSponsors = lazy(() => import('./pages/admin/ManageSponsors'));
@@ -61,6 +62,7 @@ function App() {
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="projects" element={<ManageProjects />} />
+              <Route path="schools" element={<ManageSchools />} />
               <Route path="volunteers" element={<ManageVolunteers />} />
               <Route path="blogs" element={<ManageBlogs />} />
               <Route path="donations" element={<Navigate to="/admin/dashboard" replace />} />

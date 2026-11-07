@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Navigate, useNavigate, Link, useLocation } from 'react-router-dom';
-import { FiGrid, FiUsers, FiFileText, FiLogOut, FiEdit, FiMail, FiAward, FiMenu, FiX } from 'react-icons/fi';
+import { FiGrid, FiUsers, FiFileText, FiLogOut, FiEdit, FiMail, FiAward, FiMenu, FiX, FiBookOpen } from 'react-icons/fi';
 
 const AdminLayout = () => {
   const navigate = useNavigate();

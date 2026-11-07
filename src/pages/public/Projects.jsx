@@ -92,7 +92,7 @@ const Projects = () => {
                   {/* Content */}
                   <div className="p-7 flex flex-col flex-grow">
                     {proj.location && (
-                      <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 font-medium mb-3">
+                      <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 font-medium mb-3">
                         <FiMapPin size={11} />
                         {proj.location}
                       </div>
