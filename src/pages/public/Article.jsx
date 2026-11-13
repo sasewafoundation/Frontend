@@ -5,6 +5,7 @@ import { FiClock, FiUser, FiArrowLeft, FiShare2, FiYoutube, FiImage, FiCheck, Fi
 import { getMediaUrl } from '../../utils/mediaUrl';
 import Seo from '../../components/Seo';
 import { sanitizeHtml } from '../../utils/sanitize';
+import { renderMarkdown } from '../../utils/markdown.js';
 
 import LogoLoader from '../../components/LogoLoader';
 
@@ -93,11 +94,8 @@ const Article = () => {
     );
   }
 
-  // Format markdown-like bold/italic and sanitize
-  const formattedContent = (post.content || '')
-    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-    .replace(/_(.*?)_/g, '<i>$1</i>');
-  const safeContent = sanitizeHtml(formattedContent);
+  // Safely format markdown (headings, bold, italic, lists) and sanitize
+  const safeContent = renderMarkdown(post.content || '');
 
   return (
     <div className="min-h-screen bg-white pb-24">

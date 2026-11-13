@@ -20,42 +20,13 @@ import {
 import { getMediaUrl } from '../../utils/mediaUrl';
 import api from '../../services/api';
 
-// Pin color configuration based on project progress
-const getProgressColor = (percent = 0) => {
-  if (percent >= 100) {
-    return {
-      bg: '#16a34a',
-      border: '#15803d',
-      label: 'Completed',
-      badgeBg: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-    };
-  }
-  if (percent > 0) {
-    return {
-      bg: '#c44a10',
-      border: '#a53f0f',
-      label: 'In Progress',
-      badgeBg: 'bg-amber-50 text-amber-900 border-amber-200',
-    };
-  }
-  return {
-    bg: '#64748b',
-    border: '#475569',
-    label: 'Planning',
-    badgeBg: 'bg-slate-50 text-slate-700 border-slate-200',
-  };
-};
-
-const createCustomPinIcon = (progressPercent = 0, isSelected = false) => {
-  const { bg } = getProgressColor(progressPercent);
+const createCustomPinIcon = (isSelected = false) => {
+  const bg = '#c44a10';
   const size = isSelected ? 40 : 32;
   const anchorY = isSelected ? 40 : 32;
   const anchorX = size / 2;
 
-  const innerDot =
-    progressPercent >= 100
-      ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(45deg);"><polyline points="20 6 9 17 4 12"></polyline></svg>`
-      : `<div style="width: 8px; height: 8px; background: white; border-radius: 50%; transform: rotate(45deg);"></div>`;
+  const innerDot = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(45deg);"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>`;
 
   return L.divIcon({
     className: 'school-marker-pin',
@@ -123,81 +94,6 @@ function FitBoundsToPins({ schools, selectedSchool }) {
   return null;
 }
 
-const FALLBACK_SCHOOLS = [
-  {
-    _id: 'sch_mangala',
-    name: 'Shree Mangala Devi School',
-    area: 'Chaap (Bore)',
-    lat: 27.953881857768977,
-    lng: 85.2738286829179,
-    progressPercent: 65,
-    summary: 'Classroom refurbishment and solar lighting installation.',
-  },
-  {
-    _id: 'sch_dudhedevi',
-    name: 'Shree Dudhe Devi Secondary School',
-    area: 'Jongdada',
-    lat: 27.96150824289415,
-    lng: 85.29407112293492,
-    progressPercent: 80,
-    summary: 'Secondary education building support and science lab equipment.',
-  },
-  {
-    _id: 'sch_nirgubhumi',
-    name: 'Nirgu Bhume Basic School',
-    area: 'Semrang',
-    lat: 27.974083333333333,
-    lng: 85.29216666666666,
-    progressPercent: 50,
-    summary: 'Basic primary education facilities and winter supplies.',
-  },
-  {
-    _id: 'sch_gauri',
-    name: 'Gauri Shankar',
-    area: 'Sano Bhorle',
-    lat: 27.964055555555554,
-    lng: 85.28744444444445,
-    progressPercent: 40,
-    summary: 'Community learning center and library books support.',
-  },
-  {
-    _id: 'sch_lachen',
-    name: 'Lachen Basic School',
-    area: 'Solamane',
-    lat: 27.964055555555554,
-    lng: 85.28744444444445,
-    progressPercent: 35,
-    summary: 'Rural primary school reconstruction and clean drinking water.',
-  },
-  {
-    _id: 'sch_kalika',
-    name: 'Kalika Devi Basic School',
-    area: 'Lachyang',
-    lat: 27.946491,
-    lng: 85.28996,
-    progressPercent: 60,
-    summary: 'Classroom upgrades and student learning materials.',
-  },
-  {
-    _id: 'sch_janashakti',
-    name: 'Jana Sakti Basic School',
-    area: 'Dupcheshwar',
-    lat: 27.974083333333333,
-    lng: 85.29216666666666,
-    progressPercent: 45,
-    summary: 'Basic school facilities and educational materials.',
-  },
-  {
-    _id: 'sch_mahakali',
-    name: 'Mahakali Basic School',
-    area: 'Ditha Saura',
-    lat: 27.96683333333333,
-    lng: 85.26191666666666,
-    progressPercent: 30,
-    summary: 'Classroom roof repairs and desk-bench infrastructure.',
-  },
-];
-
 export default function SchoolMap() {
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -217,14 +113,11 @@ export default function SchoolMap() {
     try {
       const res = await api.get(`/schools?_t=${Date.now()}`);
       const list = res.data?.data || [];
-      if (list.length > 0) {
-        setSchools(list);
-      } else {
-        setSchools(FALLBACK_SCHOOLS);
-      }
+      setSchools(list);
     } catch (err) {
-      console.warn('Live API unavailable for schools, using fallback list:', err.message);
-      setSchools(FALLBACK_SCHOOLS);
+      console.error('API error fetching schools:', err.message);
+      setError(err.response?.data?.message || err.message || 'Unable to load schools from server.');
+      setSchools([]);
     } finally {
       clearTimeout(timer);
       setLoading(false);
@@ -300,7 +193,7 @@ export default function SchoolMap() {
               Loading School Locations
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-3">
-              Locating schools and community milestones in Nuwakot...
+              Locating schools across Nuwakot...
             </p>
           </div>
         </div>
@@ -325,7 +218,7 @@ export default function SchoolMap() {
 
         {schoolsWithCoordinates.map((school) => {
           const isSelected = selectedSchool?._id === school._id;
-          const icon = createCustomPinIcon(school.progressPercent || 0, isSelected);
+          const icon = createCustomPinIcon(isSelected);
           const markerPos = [
             Number(school.displayLat ?? school.lat),
             Number(school.displayLng ?? school.lng),

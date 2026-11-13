@@ -42,10 +42,6 @@ const ManageSchools = () => {
     lng: null,
   });
 
-  // Milestones state: array of { title, done, completedOn }
-  const [milestones, setMilestones] = useState([]);
-  const [newMilestoneTitle, setNewMilestoneTitle] = useState('');
-
   // Media state
   const [photoFiles, setPhotoFiles] = useState([]);
   const [photoPreviews, setPhotoPreviews] = useState([]);
@@ -109,8 +105,6 @@ const ManageSchools = () => {
       lat: null,
       lng: null,
     });
-    setMilestones([]);
-    setNewMilestoneTitle('');
     setPhotoFiles([]);
     setPhotoPreviews([]);
     setRemovedPhotos([]);
@@ -134,20 +128,9 @@ const ManageSchools = () => {
       principalName: school.principalName || '',
       contact: school.contact || '',
       summary: school.summary || '',
-      progressPercent: school.progressPercent != null ? school.progressPercent : 0,
       lat: school.lat != null ? school.lat : null,
       lng: school.lng != null ? school.lng : null,
     });
-
-    setMilestones(
-      Array.isArray(school.milestones)
-        ? school.milestones.map((m) => ({
-            title: m.title || '',
-            done: Boolean(m.done),
-            completedOn: m.completedOn ? m.completedOn.slice(0, 10) : '',
-          }))
-        : []
-    );
 
     const existingPhotos = (school.photos || []).map((img) => getMediaUrl(img));
     setPhotoPreviews(existingPhotos);
@@ -188,44 +171,6 @@ const ManageSchools = () => {
     }
   };
 
-  // Milestone handlers
-  const handleAddMilestone = () => {
-    if (!newMilestoneTitle.trim()) return;
-    setMilestones((prev) => [
-      ...prev,
-      {
-        title: newMilestoneTitle.trim(),
-        done: false,
-        completedOn: '',
-      },
-    ]);
-    setNewMilestoneTitle('');
-  };
-
-  const handleToggleMilestone = (index) => {
-    setMilestones((prev) =>
-      prev.map((m, i) => {
-        if (i !== index) return m;
-        const newDone = !m.done;
-        return {
-          ...m,
-          done: newDone,
-          completedOn: newDone && !m.completedOn ? new Date().toISOString().slice(0, 10) : m.completedOn,
-        };
-      })
-    );
-  };
-
-  const handleMilestoneDateChange = (index, dateVal) => {
-    setMilestones((prev) =>
-      prev.map((m, i) => (i === index ? { ...m, completedOn: dateVal } : m))
-    );
-  };
-
-  const handleRemoveMilestone = (index) => {
-    setMilestones((prev) => prev.filter((_, i) => i !== index));
-  };
-
   // Form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -244,7 +189,7 @@ const ManageSchools = () => {
       payload.append('principalName', formData.principalName.trim());
       payload.append('contact', formData.contact.trim());
       payload.append('summary', formData.summary.trim());
-      payload.append('progressPercent', formData.progressPercent);
+      payload.append('progressPercent', 0);
 
       if (formData.studentCount !== '' && formData.studentCount !== null) {
         payload.append('studentCount', formData.studentCount);
@@ -264,7 +209,7 @@ const ManageSchools = () => {
         payload.append('lng', '');
       }
 
-      payload.append('milestones', JSON.stringify(milestones));
+      payload.append('milestones', JSON.stringify([]));
 
       if (removedPhotos.length > 0) {
         payload.append('removedPhotos', JSON.stringify(removedPhotos));
@@ -336,7 +281,7 @@ const ManageSchools = () => {
             School Management
           </h2>
           <p className="text-neutral-500 text-sm mt-1">
-            Manage supported schools, coordinates, construction milestones, and contact details.
+            Manage supported schools, coordinates, and contact details.
           </p>
         </div>
         <button
@@ -357,15 +302,14 @@ const ManageSchools = () => {
                 <th className="px-6 py-4 border-b border-neutral-100">School & Area</th>
                 <th className="px-6 py-4 border-b border-neutral-100">Location</th>
                 <th className="px-6 py-4 border-b border-neutral-100">Students</th>
-                <th className="px-6 py-4 border-b border-neutral-100">Progress</th>
-                <th className="px-6 py-4 border-b border-neutral-100 text-right">Actions</th>
+                <th className="px-6 py-4 border-b border-neutral-100 text-right whitespace-nowrap min-w-[120px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
               {schools.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="5"
+                    colSpan="4"
                     className="px-6 py-16 text-center text-sm font-medium text-neutral-400"
                   >
                     No schools registered yet. Click &quot;Add School&quot; to create one.
@@ -419,57 +363,24 @@ const ManageSchools = () => {
                         </span>
                       </td>
 
-                      {/* Progress */}
-                      <td className="px-6 py-5">
-                        <div className="w-36">
-                          <div className="flex justify-between items-center text-xs font-semibold mb-1">
-                            <span
-                              className={
-                                school.progressPercent === 100
-                                  ? 'text-emerald-600'
-                                  : school.progressPercent > 0
-                                  ? 'text-primary-600'
-                                  : 'text-neutral-500'
-                              }
-                            >
-                              {school.progressPercent || 0}%
-                            </span>
-                            <span className="text-[11px] text-neutral-400 font-normal">
-                              {school.milestones?.filter((m) => m.done).length || 0}/
-                              {school.milestones?.length || 0} done
-                            </span>
-                          </div>
-                          <div className="w-full h-2 bg-neutral-100 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full transition-all duration-300 ${
-                                school.progressPercent === 100
-                                  ? 'bg-emerald-500'
-                                  : school.progressPercent > 0
-                                  ? 'bg-primary-600'
-                                  : 'bg-neutral-300'
-                              }`}
-                              style={{ width: `${Math.min(100, school.progressPercent || 0)}%` }}
-                            />
-                          </div>
-                        </div>
-                      </td>
-
                       {/* Actions */}
-                      <td className="px-6 py-5 text-right space-x-2">
-                        <button
-                          onClick={() => openEditModal(school)}
-                          className="p-2.5 bg-neutral-100 text-neutral-600 rounded-lg hover:text-primary-700 hover:bg-primary-50 transition-colors"
-                          title="Edit School"
-                        >
-                          <FiEdit3 size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(school)}
-                          className="p-2.5 bg-neutral-100 text-neutral-500 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors"
-                          title="Delete School"
-                        >
-                          <FiTrash2 size={16} />
-                        </button>
+                      <td className="px-6 py-5 text-right whitespace-nowrap">
+                        <div className="inline-flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => openEditModal(school)}
+                            className="p-2 bg-neutral-100 text-neutral-600 rounded-lg hover:text-primary-700 hover:bg-primary-50 transition-colors"
+                            title="Edit School"
+                          >
+                            <FiEdit3 size={15} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(school)}
+                            className="p-2 bg-neutral-100 text-neutral-500 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors"
+                            title="Delete School"
+                          >
+                            <FiTrash2 size={15} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -614,132 +525,6 @@ const ManageSchools = () => {
                       className="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-sm font-medium resize-none"
                     />
                   </div>
-                </div>
-
-                {/* Progress Percentage Slider */}
-                <div className="p-5 bg-neutral-50 border border-neutral-200 rounded-2xl space-y-3">
-                  <div className="flex justify-between items-center">
-                    <label className="text-xs font-bold text-neutral-800">
-                      Work Progress Percentage
-                    </label>
-                    <span className="text-sm font-bold text-primary-700 bg-white border border-primary-200 px-3 py-1 rounded-full shadow-xs">
-                      {formData.progressPercent}%
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={formData.progressPercent}
-                    onChange={(e) =>
-                      setFormData({ ...formData, progressPercent: Number(e.target.value) })
-                    }
-                    className="w-full h-2.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
-                  />
-                  <div className="flex justify-between text-[11px] text-neutral-400 font-medium">
-                    <span>0% (Not Started)</span>
-                    <span>50% (In Progress)</span>
-                    <span>100% (Completed)</span>
-                  </div>
-                </div>
-
-                {/* Milestones Editor */}
-                <div className="p-5 bg-white border border-neutral-200 rounded-2xl space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="text-sm font-bold text-neutral-900">
-                        Milestones Checklist
-                      </h4>
-                      <p className="text-xs text-neutral-500">
-                        Add project milestones, mark completion, and set optional finish dates.
-                      </p>
-                    </div>
-                    <span className="text-xs font-semibold text-neutral-500 bg-neutral-100 px-2.5 py-1 rounded-md">
-                      {milestones.filter((m) => m.done).length}/{milestones.length} Done
-                    </span>
-                  </div>
-
-                  {/* Add Milestone input */}
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="e.g. Roof restoration & painting"
-                      value={newMilestoneTitle}
-                      onChange={(e) => setNewMilestoneTitle(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddMilestone();
-                        }
-                      }}
-                      className="flex-1 px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-900 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddMilestone}
-                      className="px-4 py-2 bg-neutral-900 text-white rounded-xl text-xs font-semibold hover:bg-neutral-800 transition-colors shrink-0"
-                    >
-                      Add Milestone
-                    </button>
-                  </div>
-
-                  {/* Milestone List */}
-                  {milestones.length > 0 && (
-                    <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                      {milestones.map((milestone, idx) => (
-                        <div
-                          key={idx}
-                          className={`flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border transition-colors ${
-                            milestone.done
-                              ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
-                              : 'bg-neutral-50 border-neutral-200 text-neutral-800'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-[200px]">
-                            <button
-                              type="button"
-                              onClick={() => handleToggleMilestone(idx)}
-                              className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors shrink-0 ${
-                                milestone.done
-                                  ? 'bg-emerald-600 border-emerald-600 text-white'
-                                  : 'bg-white border-neutral-300 text-transparent hover:border-neutral-400'
-                              }`}
-                            >
-                              <FiCheck size={14} />
-                            </button>
-                            <span
-                              className={`text-xs font-medium ${
-                                milestone.done ? 'line-through text-neutral-500' : ''
-                              }`}
-                            >
-                              {milestone.title}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-2 shrink-0">
-                            <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-lg border border-neutral-200 text-xs">
-                              <FiCalendar size={13} className="text-neutral-400" />
-                              <input
-                                type="date"
-                                value={milestone.completedOn || ''}
-                                onChange={(e) => handleMilestoneDateChange(idx, e.target.value)}
-                                className="text-xs text-neutral-700 bg-transparent focus:outline-none"
-                              />
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveMilestone(idx)}
-                              className="p-1.5 text-neutral-400 hover:text-red-600 rounded-lg transition-colors"
-                              title="Delete milestone"
-                            >
-                              <FiTrash2 size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 {/* Location Picker */}

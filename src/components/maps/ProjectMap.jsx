@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, GeoJSON, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
@@ -11,40 +11,17 @@ import {
   Loader2,
   RefreshCw,
   Phone,
-  CheckCircle2,
-  Circle,
   Layers,
   ChevronLeft,
   ChevronRight,
   GraduationCap,
   Droplet,
   HeartPulse,
+  Users,
+  User,
 } from 'lucide-react';
 import { getMediaUrl } from '../../utils/mediaUrl';
 import api from '../../services/api';
-
-// Progress color helper
-const getProgressColor = (percent = 0) => {
-  if (percent >= 100) {
-    return {
-      bg: '#16a34a', // Emerald Green
-      border: '#15803d',
-      label: 'Completed',
-    };
-  }
-  if (percent > 0) {
-    return {
-      bg: '#c44a10', // Terracotta Brand
-      border: '#9a3412',
-      label: 'In Progress',
-    };
-  }
-  return {
-    bg: '#64748b', // Slate
-    border: '#475569',
-    label: 'Planning',
-  };
-};
 
 // Type-based SVG icon generator
 const getTypeSvg = (type = '') => {
@@ -63,8 +40,7 @@ const getTypeSvg = (type = '') => {
 
 // Custom SVG Type-based Pin Icon
 const createTypePinIcon = (loc, isSelected = false) => {
-  const progressPercent = loc?.progressPercent || 0;
-  const { bg } = getProgressColor(progressPercent);
+  const bg = '#c44a10';
   const size = isSelected ? 44 : 38;
   const anchorY = isSelected ? 44 : 38;
   const anchorX = size / 2;
@@ -136,7 +112,20 @@ const createRegionLabelIcon = (regionName = 'Nuwakot') => {
 // Map click handler to close modal on background tap
 function MapBackgroundClickHandler({ onDeselect }) {
   useMapEvents({
-    click: () => {
+    click: (e) => {
+      const target = e.originalEvent?.target;
+      if (
+        target &&
+        (target.closest('.leaflet-marker-icon') ||
+          target.closest('.leaflet-popup') ||
+          target.closest('.location-type-marker') ||
+          target.closest('.school-leaflet-popup') ||
+          target.closest('button') ||
+          target.closest('a') ||
+          target.closest('[role="dialog"]'))
+      ) {
+        return;
+      }
       onDeselect();
     },
   });
@@ -186,9 +175,10 @@ function MapBoundsHandler({ geojsonData, locations, selectedLocation }) {
 
   useEffect(() => {
     if (selectedLocation && selectedLocation.lat != null && selectedLocation.lng != null) {
-      map.panTo([Number(selectedLocation.lat), Number(selectedLocation.lng)], {
+      const targetZoom = Math.max(map.getZoom(), 15);
+      map.flyTo([Number(selectedLocation.lat), Number(selectedLocation.lng)], targetZoom, {
         animate: true,
-        duration: 0.5,
+        duration: 0.8,
       });
     }
   }, [selectedLocation, map]);
@@ -196,191 +186,17 @@ function MapBoundsHandler({ geojsonData, locations, selectedLocation }) {
   return null;
 }
 
-// Verified fallback project and school location dataset
-const FALLBACK_PROJECT = {
-  id: '6acb3d5681c15e7cfb129b9c',
-  name: 'Rural School Support & Reconstruction',
-  title: 'Rural School Support & Reconstruction',
-  slug: 'rural-school-support',
-  about: 'Rebuilding community schools and equipping students across remote settlements in Nuwakot, Nepal.',
-  summary: 'Rebuilding community schools and equipping students across remote settlements in Nuwakot, Nepal.',
-  description: 'A dedicated initiative to rebuild and equip rural community schools with infrastructure, learning materials, and clean facilities across remote hilly settlements.',
-  startDate: '2024-01-15T00:00:00.000Z',
-  projectType: 'Education',
-  status: 'Active',
-  regionName: 'Nuwakot',
-};
-
-const FALLBACK_LOCATIONS = [
-  {
-    _id: 'loc_mangala',
-    name: 'Shree Mangala Devi School',
-    area: 'Chaap (Bore)',
-    type: 'School',
-    lat: 27.953881857768977,
-    lng: 85.2738286829179,
-    progressPercent: 65,
-    summary: 'Classroom refurbishment and solar lighting installation.',
-    details: [
-      { label: 'Area', value: 'Chaap (Bore)' },
-      { label: 'Type', value: 'Primary School' },
-      { label: 'Status', value: 'Active' },
-    ],
-    milestones: [
-      { title: 'Community assessment & planning', done: true },
-      { title: 'Material transport & structural repairs', done: true },
-      { title: 'Classroom desks & study benches', done: true },
-      { title: 'Solar power system installation', done: false },
-    ],
-  },
-  {
-    _id: 'loc_dudhedevi',
-    name: 'Shree Dudhe Devi Secondary School',
-    area: 'Jongdada',
-    type: 'School',
-    lat: 27.96150824289415,
-    lng: 85.29407112293492,
-    progressPercent: 80,
-    summary: 'Secondary education building support and science lab equipment.',
-    details: [
-      { label: 'Area', value: 'Jongdada' },
-      { label: 'Type', value: 'Secondary School' },
-      { label: 'Status', value: 'Active' },
-    ],
-    milestones: [
-      { title: 'Structural reinforcement', done: true },
-      { title: 'Classroom flooring & painting', done: true },
-      { title: 'Science lab equipment delivery', done: true },
-      { title: 'Digital learning tools handover', done: false },
-    ],
-  },
-  {
-    _id: 'loc_nirgubhumi',
-    name: 'Nirgu Bhume Basic School',
-    area: 'Semrang',
-    type: 'School',
-    // 27°58'26.7"N 85°17'31.8"E
-    lat: 27.974083333333333,
-    lng: 85.29216666666666,
-    progressPercent: 50,
-    summary: 'Basic primary education facilities and winter supplies.',
-    details: [
-      { label: 'Area', value: 'Semrang' },
-      { label: 'Type', value: 'Basic School' },
-      { label: 'Status', value: 'Active' },
-    ],
-    milestones: [
-      { title: 'Site visit and needs survey', done: true },
-      { title: 'School building roof repair', done: true },
-      { title: 'Textbooks and educational supplies', done: false },
-    ],
-  },
-  {
-    _id: 'loc_gauri',
-    name: 'Gauri Shankar',
-    area: 'Sano Bhorle',
-    type: 'School',
-    // 27°57'50.6"N 85°17'14.8"E
-    lat: 27.964055555555554,
-    lng: 85.28744444444445,
-    progressPercent: 40,
-    summary: 'Community learning center and library books support.',
-    details: [
-      { label: 'Area', value: 'Sano Bhorle' },
-      { label: 'Type', value: 'Basic School' },
-      { label: 'Status', value: 'Active' },
-    ],
-    milestones: [
-      { title: 'Needs assessment survey', done: true },
-      { title: 'Classroom partition wall repairs', done: true },
-      { title: 'Library corner setup', done: false },
-    ],
-  },
-  {
-    _id: 'loc_lachen',
-    name: 'Lachen Basic School',
-    area: 'Solamane',
-    type: 'School',
-    // Lachyang: 27°57'50.6"N 85°17'14.8"E
-    lat: 27.964055555555554,
-    lng: 85.28744444444445,
-    progressPercent: 35,
-    summary: 'Rural primary school reconstruction and clean drinking water.',
-    details: [
-      { label: 'Area', value: 'Solamane (Lachyang)' },
-      { label: 'Type', value: 'Basic School' },
-      { label: 'Status', value: 'Active' },
-    ],
-    milestones: [
-      { title: 'Local committee formation', done: true },
-      { title: 'Clean drinking water piping', done: false },
-      { title: 'Classroom upgrades', done: false },
-    ],
-  },
-  {
-    _id: 'loc_kalika',
-    name: 'Kalika Devi Basic School',
-    area: 'Lachyang',
-    type: 'School',
-    lat: 27.946491,
-    lng: 85.28996,
-    progressPercent: 60,
-    summary: 'Classroom upgrades and student learning materials.',
-    details: [
-      { label: 'Area', value: 'Lachyang' },
-      { label: 'Type', value: 'Basic School' },
-      { label: 'Status', value: 'Active' },
-    ],
-    milestones: [
-      { title: 'Structural inspection', done: true },
-      { title: 'Interior wall plaster and paint', done: true },
-      { title: 'Whiteboards and desks', done: true },
-      { title: 'Sports equipment distribution', done: false },
-    ],
-  },
-  {
-    _id: 'loc_janashakti',
-    name: 'Jana Sakti Basic School',
-    area: 'Dupcheshwar',
-    type: 'School',
-    // 27°58'26.7"N 85°17'31.8"E
-    lat: 27.974083333333333,
-    lng: 85.29216666666666,
-    progressPercent: 45,
-    summary: 'Basic school facilities and educational materials.',
-    details: [
-      { label: 'Area', value: 'Dupcheshwar' },
-      { label: 'Type', value: 'Basic School' },
-      { label: 'Status', value: 'Active' },
-    ],
-    milestones: [
-      { title: 'Initial field coordination', done: true },
-      { title: 'Classroom window and door repair', done: true },
-      { title: 'Stationery and uniform support', done: false },
-    ],
-  },
-  {
-    _id: 'loc_mahakali',
-    name: 'Mahakali Basic School',
-    area: 'Ditha Saura',
-    type: 'School',
-    // 27°58'00.6"N 85°15'42.9"E
-    lat: 27.96683333333333,
-    lng: 85.26191666666666,
-    progressPercent: 30,
-    summary: 'Classroom roof repairs and desk-bench infrastructure.',
-    details: [
-      { label: 'Area', value: 'Ditha Saura' },
-      { label: 'Type', value: 'Basic School' },
-      { label: 'Status', value: 'Active' },
-    ],
-    milestones: [
-      { title: 'Needs verification with school headmaster', done: true },
-      { title: 'Roof waterproofing materials delivered', done: false },
-      { title: 'Student seating benches assembly', done: false },
-    ],
-  },
-];
+// Map resize handler to prevent grey tiles and force full container sizing
+function MapResizeHandler() {
+  const map = useMap();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [map]);
+  return null;
+}
 
 export default function ProjectMap({ projectSlug }) {
   const [data, setData] = useState(null);
@@ -408,7 +224,7 @@ export default function ProjectMap({ projectSlug }) {
     }
   }, []);
 
-  // Fetch project map data with automatic resilient fallback
+  // Fetch dynamic project map data from backend API
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -418,20 +234,42 @@ export default function ProjectMap({ projectSlug }) {
       setTakingLonger(true);
     }, 3500);
 
-    const activeSlug = projectSlug || 'rural-school-support';
+    const rawSlug = projectSlug || 'scholarship-and-school-support';
+    const activeSlug =
+      rawSlug === 'undefined' || rawSlug === 'null' || !rawSlug
+        ? 'scholarship-and-school-support'
+        : rawSlug;
 
     try {
-      // Attempt fetch via Axios client (handles base URL automatically)
-      const res = await api.get(`/projects/${activeSlug}/map?_t=${Date.now()}`, {
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          Pragma: 'no-cache',
-        },
-      });
+      let res;
+      try {
+        res = await api.get(`/projects/${activeSlug}/map?_t=${Date.now()}`, {
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            Pragma: 'no-cache',
+          },
+        });
+      } catch (err1) {
+        // If the specific slug failed and wasn't the main project slug, attempt default
+        if (activeSlug !== 'scholarship-and-school-support') {
+          res = await api.get(`/projects/scholarship-and-school-support/map?_t=${Date.now()}`, {
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              Pragma: 'no-cache',
+            },
+          });
+        } else {
+          throw err1;
+        }
+      }
 
       const json = res.data;
-      if (json && json.project && Array.isArray(json.locations) && json.locations.length > 0) {
-        setData(json);
+      if (json && json.project) {
+        setData({
+          success: true,
+          project: json.project,
+          locations: Array.isArray(json.locations) ? json.locations : [],
+        });
 
         if (json.project?.regionGeoJSON) {
           setRegionGeoJSON(json.project.regionGeoJSON);
@@ -439,21 +277,62 @@ export default function ProjectMap({ projectSlug }) {
           loadStaticBoundary();
         }
       } else {
-        throw new Error('Incomplete data received from server');
+        throw new Error('Project map data not found.');
       }
     } catch (err) {
-      console.warn('API fetch unavailable, using verified offline project map dataset:', err.message);
-      // For the primary rural school project or default, seamlessly use the verified dataset
-      if (activeSlug === 'rural-school-support' || !projectSlug) {
-        setData({
-          success: true,
-          project: FALLBACK_PROJECT,
-          locations: FALLBACK_LOCATIONS,
-        });
+      console.warn('Map endpoint request failed, attempting dynamic database fallback:', err.message);
+      try {
+        // Dynamic fallback: fetch project from /projects and schools from /schools directly
+        const [projRes, schoolsRes] = await Promise.allSettled([
+          api.get(`/projects/s/${activeSlug}`).catch(() => api.get('/projects')),
+          api.get('/schools'),
+        ]);
 
-        loadStaticBoundary();
-      } else {
-        setError(err.response?.data?.message || err.message || 'Unable to connect to the project map service.');
+        let fallbackProject = null;
+        if (projRes.status === 'fulfilled' && projRes.value?.data) {
+          const pData = projRes.value.data.data || projRes.value.data;
+          fallbackProject = Array.isArray(pData) ? pData[0] : pData;
+        }
+
+        let fallbackLocations = [];
+        if (schoolsRes.status === 'fulfilled' && schoolsRes.value?.data) {
+          const sData = schoolsRes.value.data.data || schoolsRes.value.data;
+          if (Array.isArray(sData)) {
+            fallbackLocations = sData.map((s) => ({
+              _id: s._id,
+              name: s.name,
+              area: s.address || s.area || 'Lachyang, Suryagadhi-1',
+              type: 'School',
+              lat: s.lat ?? s.coordinates?.lat,
+              lng: s.lng ?? s.coordinates?.lng,
+              photos: s.photos || s.images || [],
+              details: [
+                s.studentCount ? { label: 'Students', value: `${s.studentCount} enrolled` } : null,
+                s.level ? { label: 'Level', value: s.level } : null,
+                s.headmaster ? { label: 'Headmaster', value: s.headmaster } : null,
+              ].filter(Boolean),
+            }));
+          }
+        }
+
+        if (fallbackProject || fallbackLocations.length > 0) {
+          setData({
+            success: true,
+            project: {
+              title: fallbackProject?.title || 'Scholarship and School Support Project',
+              slug: fallbackProject?.slug || 'scholarship-and-school-support',
+              summary: fallbackProject?.summary || '',
+              description: fallbackProject?.description || '',
+              location: fallbackProject?.location || 'Lachyang, Suryagadhi-1, Nuwakot, Nepal',
+            },
+            locations: fallbackLocations,
+          });
+          loadStaticBoundary();
+        } else {
+          setError(err.response?.data?.message || err.message || 'Unable to connect to the project map service.');
+        }
+      } catch (fallbackErr) {
+        setError(fallbackErr.message || 'Unable to connect to the project map service.');
       }
     } finally {
       clearTimeout(timer);
@@ -528,6 +407,39 @@ export default function ProjectMap({ projectSlug }) {
     });
   }, [data?.locations]);
 
+  // Unified details extraction merging details array, studentCount, principalName, and contact
+  const displayedDetails = useMemo(() => {
+    if (!selectedLocation) return [];
+    const list = Array.isArray(selectedLocation.details) ? [...selectedLocation.details] : [];
+    const seen = new Set(list.map((d) => (d.label || '').toLowerCase().trim()));
+
+    if (
+      selectedLocation.studentCount != null &&
+      !seen.has('students') &&
+      !seen.has('student count') &&
+      !seen.has('students enrolled')
+    ) {
+      list.unshift({ label: 'Students', value: `${selectedLocation.studentCount} enrolled` });
+    }
+    if (
+      selectedLocation.principalName &&
+      !seen.has('principal') &&
+      !seen.has('principal name') &&
+      !seen.has('headmaster')
+    ) {
+      list.push({ label: 'Principal', value: selectedLocation.principalName });
+    }
+    if (
+      selectedLocation.contact &&
+      !seen.has('contact') &&
+      !seen.has('contact number') &&
+      !seen.has('phone')
+    ) {
+      list.push({ label: 'Contact', value: selectedLocation.contact });
+    }
+    return list;
+  }, [selectedLocation]);
+
   // Clear terracotta border (2.5px) and light translucent fill
   const regionStyle = useMemo(
     () => ({
@@ -590,7 +502,7 @@ export default function ProjectMap({ projectSlug }) {
               Loading Project Map
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-3">
-              Locating project sites and regional milestones...
+              Locating project sites across Nuwakot...
             </p>
             {takingLonger && (
               <div className="bg-amber-50/90 border border-amber-200/80 rounded-xl p-3 text-left text-xs text-amber-900">
@@ -686,7 +598,7 @@ export default function ProjectMap({ projectSlug }) {
                         <div className="text-[10px] text-slate-400 truncate">{loc.area || 'Nuwakot'}</div>
                       </div>
                       <span className="text-[10px] font-mono text-slate-500 shrink-0">
-                        {Number(loc.lat).toFixed(3)}, {Number(loc.lng).toFixed(3)}
+                        {Number(loc.lat).toFixed(5)}, {Number(loc.lng).toFixed(5)}
                       </span>
                     </button>
                   ))}
@@ -705,6 +617,7 @@ export default function ProjectMap({ projectSlug }) {
         zoomControl={false}
         className="h-full w-full"
       >
+        <MapResizeHandler />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -741,17 +654,90 @@ export default function ProjectMap({ projectSlug }) {
             Number(loc.displayLng ?? loc.lng),
           ];
 
+          const studentVal =
+            loc.details?.find((d) => (d.label || '').toLowerCase().includes('student'))?.value ||
+            (loc.studentCount != null ? String(loc.studentCount) : null);
+          const principalVal =
+            loc.details?.find((d) => (d.label || '').toLowerCase().includes('principal'))?.value ||
+            loc.principalName;
+          const contactVal =
+            loc.details?.find((d) => (d.label || '').toLowerCase().includes('contact'))?.value ||
+            loc.contact;
+
           return (
             <Marker
-              key={loc._id}
+              key={`${loc._id}_${loc.displayLat ?? loc.lat}_${loc.displayLng ?? loc.lng}_${isSelected ? 'active' : 'idle'}`}
               position={markerPos}
               icon={icon}
               eventHandlers={{
-                click: () => {
+                click: (e) => {
+                  if (e?.originalEvent) {
+                    e.originalEvent.stopPropagation();
+                  }
                   setSelectedLocation(loc);
                 },
               }}
-            />
+            >
+              <Popup className="school-leaflet-popup" offset={[0, -22]} maxWidth={300}>
+                <div className="p-1 space-y-2 text-slate-800">
+                  {loc.photos && loc.photos.length > 0 && (
+                    <div className="h-28 w-full rounded-xl overflow-hidden bg-slate-100 shadow-inner">
+                      <img
+                        src={getMediaUrl(loc.photos[0])}
+                        alt={loc.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-[10px] uppercase font-bold text-[#c44a10]">
+                      {loc.type || 'Community School'}
+                    </div>
+                    <h4 className="font-bold text-sm text-slate-900 leading-tight">
+                      {loc.name}
+                    </h4>
+                    {loc.area && (
+                      <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
+                        <MapPin size={11} className="text-[#c44a10]" /> {loc.area}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Quick stats pills */}
+                  <div className="flex flex-wrap gap-1.5 pt-0.5 text-[11px]">
+                    {studentVal && (
+                      <span className="bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.5 rounded font-semibold inline-flex items-center gap-1">
+                        <Users size={11} className="text-[#c44a10]" /> {studentVal} Students
+                      </span>
+                    )}
+                    {principalVal && (
+                      <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded inline-flex items-center gap-1 font-medium">
+                        <User size={11} /> {principalVal}
+                      </span>
+                    )}
+                    {contactVal && (
+                      <a
+                        href={`tel:${contactVal}`}
+                        className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded inline-flex items-center gap-1 hover:underline font-semibold"
+                      >
+                        <Phone size={11} /> {contactVal}
+                      </a>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedLocation(loc);
+                    }}
+                    className="w-full mt-2 py-2 px-3 bg-[#c44a10] hover:bg-[#9a3412] text-white text-xs font-bold rounded-xl text-center transition-colors shadow-xs"
+                  >
+                    View Full School Profile
+                  </button>
+                </div>
+              </Popup>
+            </Marker>
           );
         })}
       </MapContainer>
@@ -798,8 +784,8 @@ export default function ProjectMap({ projectSlug }) {
 
             {/* Scrollable Container */}
             <div className="overflow-y-auto flex-1">
-              {/* Photo Carousel or Single Image */}
-              {selectedLocation.photos && selectedLocation.photos.length > 0 && (
+              {/* Photo Carousel, Single Image, or Decorative School Banner */}
+              {selectedLocation.photos && selectedLocation.photos.length > 0 ? (
                 <div className="relative w-full h-56 sm:h-64 bg-slate-900 shrink-0 overflow-hidden">
                   <img
                     src={getMediaUrl(selectedLocation.photos[activePhotoIndex] || selectedLocation.photos[0])}
@@ -851,6 +837,17 @@ export default function ProjectMap({ projectSlug }) {
                     </>
                   )}
                 </div>
+              ) : (
+                <div className="relative w-full h-32 sm:h-36 bg-gradient-to-r from-amber-700 to-[#c44a10] shrink-0 flex items-center justify-center p-6 text-white text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                      <GraduationCap size={24} className="text-white" />
+                    </div>
+                    <span className="text-xs font-bold tracking-wider uppercase text-amber-100">
+                      {selectedLocation.type || 'Community School'}
+                    </span>
+                  </div>
+                </div>
               )}
 
               {/* Main Content Body */}
@@ -861,22 +858,9 @@ export default function ProjectMap({ projectSlug }) {
                     <span className="text-xs font-bold text-[#c44a10] uppercase tracking-wider">
                       {selectedLocation.type || 'Community School'}
                     </span>
-                    <span
-                      className={`text-[11px] font-bold px-3 py-1 rounded-full border ${
-                        getProgressColor(selectedLocation.progressPercent).border
-                      } ${
-                        selectedLocation.progressPercent >= 100
-                          ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                          : selectedLocation.progressPercent > 0
-                          ? 'bg-amber-50 text-amber-900 border-amber-200'
-                          : 'bg-slate-50 text-slate-700 border-slate-200'
-                      }`}
-                    >
-                      {selectedLocation.progressPercent >= 100
-                        ? 'Completed'
-                        : selectedLocation.progressPercent > 0
-                        ? 'In Progress'
-                        : 'Planning'}
+                    <span className="text-[11px] font-bold px-3 py-1 rounded-full border bg-emerald-50 text-emerald-800 border-emerald-200 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                      Active School Site
                     </span>
                   </div>
 
@@ -887,12 +871,19 @@ export default function ProjectMap({ projectSlug }) {
                     {selectedLocation.name}
                   </h2>
 
-                  {selectedLocation.area && (
-                    <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mt-1">
-                      <MapPin size={13} className="text-[#c44a10] shrink-0" />
-                      <span>{selectedLocation.area}</span>
-                    </div>
-                  )}
+                  <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                    {selectedLocation.area && (
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                        <MapPin size={13} className="text-[#c44a10] shrink-0" />
+                        <span>{selectedLocation.area}</span>
+                      </div>
+                    )}
+                    {selectedLocation.lat != null && selectedLocation.lng != null && (
+                      <div className="inline-flex items-center gap-1 text-[11px] font-mono text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">
+                        <span>GPS: {Number(selectedLocation.lat).toFixed(6)}, {Number(selectedLocation.lng).toFixed(6)}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Summary narrative */}
@@ -902,77 +893,36 @@ export default function ProjectMap({ projectSlug }) {
                   </p>
                 )}
 
-                {/* Milestone Progress Bar */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs font-semibold">
-                    <span className="text-slate-600">Site Progress</span>
-                    <span className="text-[#c44a10] font-bold">
-                      {selectedLocation.progressPercent || 0}%
-                    </span>
-                  </div>
-                  <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${selectedLocation.progressPercent || 0}%`,
-                        backgroundColor: getProgressColor(selectedLocation.progressPercent).bg,
-                      }}
-                    />
-                  </div>
-                </div>
-
                 {/* Dynamic Details Key-Value Cards */}
-                {selectedLocation.details && selectedLocation.details.length > 0 && (
+                {displayedDetails && displayedDetails.length > 0 && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {selectedLocation.details.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-slate-50 border border-slate-100 p-3 rounded-2xl text-left"
-                      >
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
-                          {item.label}
-                        </div>
-                        <div className="text-xs sm:text-sm font-semibold text-slate-800 break-words">
-                          {item.value}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Milestones Checklist */}
-                {selectedLocation.milestones && selectedLocation.milestones.length > 0 && (
-                  <div className="space-y-3 pt-2">
-                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                      Milestones ({selectedLocation.milestones.filter((m) => m.done).length}/
-                      {selectedLocation.milestones.length} completed)
-                    </h3>
-                    <div className="space-y-2">
-                      {selectedLocation.milestones.map((milestone, idx) => {
-                        const title = typeof milestone === 'string' ? milestone : milestone.title;
-                        const done = Boolean(milestone.done);
-                        return (
-                          <div
-                            key={idx}
-                            className={`flex items-start gap-3 p-3 rounded-xl border text-xs transition-colors ${
-                              done
-                                ? 'bg-emerald-50/60 border-emerald-100 text-emerald-950 font-medium'
-                                : 'bg-slate-50/60 border-slate-100 text-slate-600'
-                            }`}
-                          >
-                            {done ? (
-                              <CheckCircle2
-                                size={16}
-                                className="text-emerald-600 shrink-0 mt-0.5"
-                              />
-                            ) : (
-                              <Circle size={16} className="text-slate-300 shrink-0 mt-0.5" />
-                            )}
-                            <span className="leading-snug">{title}</span>
+                    {displayedDetails.map((item, idx) => {
+                      const isPhone =
+                        (item.label || '').toLowerCase().includes('contact') ||
+                        (item.label || '').toLowerCase().includes('phone');
+                      return (
+                        <div
+                          key={idx}
+                          className="bg-slate-50 border border-slate-100 p-3.5 rounded-2xl text-left"
+                        >
+                          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                            {item.label}
                           </div>
-                        );
-                      })}
-                    </div>
+                          {isPhone ? (
+                            <a
+                              href={`tel:${item.value}`}
+                              className="text-xs sm:text-sm font-semibold text-[#c44a10] hover:underline flex items-center gap-1.5"
+                            >
+                              <Phone size={13} /> {item.value}
+                            </a>
+                          ) : (
+                            <div className="text-xs sm:text-sm font-semibold text-slate-800 break-words">
+                              {item.value}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
 

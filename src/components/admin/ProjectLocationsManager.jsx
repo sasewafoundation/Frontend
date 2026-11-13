@@ -39,14 +39,11 @@ const ProjectLocationsManager = ({ project, onClose }) => {
     area: '',
     type: 'School',
     summary: '',
-    progressPercent: 0,
     lat: null,
     lng: null,
   });
 
   const [details, setDetails] = useState([]);
-  const [milestones, setMilestones] = useState([]);
-  const [newMilestoneTitle, setNewMilestoneTitle] = useState('');
 
   // Media
   const [photoFiles, setPhotoFiles] = useState([]);
@@ -104,13 +101,10 @@ const ProjectLocationsManager = ({ project, onClose }) => {
       area: '',
       type: initialType,
       summary: '',
-      progressPercent: 0,
       lat: null,
       lng: null,
     });
     setDetails(initialType === 'School' ? [...DEFAULT_SCHOOL_DETAILS] : []);
-    setMilestones([]);
-    setNewMilestoneTitle('');
     setPhotoFiles([]);
     setPhotoPreviews([]);
     setRemovedPhotos([]);
@@ -132,7 +126,6 @@ const ProjectLocationsManager = ({ project, onClose }) => {
       area: loc.area || '',
       type: loc.type || 'Location',
       summary: loc.summary || '',
-      progressPercent: loc.progressPercent != null ? loc.progressPercent : 0,
       lat: loc.lat != null ? loc.lat : null,
       lng: loc.lng != null ? loc.lng : null,
     });
@@ -142,16 +135,6 @@ const ProjectLocationsManager = ({ project, onClose }) => {
         ? loc.details.map((d) => ({ label: d.label || '', value: d.value || '' }))
         : loc.type === 'School'
         ? [...DEFAULT_SCHOOL_DETAILS]
-        : []
-    );
-
-    setMilestones(
-      Array.isArray(loc.milestones)
-        ? loc.milestones.map((m) => ({
-            title: m.title || '',
-            done: Boolean(m.done),
-            completedOn: m.completedOn ? m.completedOn.slice(0, 10) : '',
-          }))
         : []
     );
 
@@ -218,44 +201,6 @@ const ProjectLocationsManager = ({ project, onClose }) => {
     }
   };
 
-  // Milestone handlers
-  const handleAddMilestone = () => {
-    if (!newMilestoneTitle.trim()) return;
-    setMilestones((prev) => [
-      ...prev,
-      {
-        title: newMilestoneTitle.trim(),
-        done: false,
-        completedOn: '',
-      },
-    ]);
-    setNewMilestoneTitle('');
-  };
-
-  const handleToggleMilestone = (index) => {
-    setMilestones((prev) =>
-      prev.map((m, i) => {
-        if (i !== index) return m;
-        const newDone = !m.done;
-        return {
-          ...m,
-          done: newDone,
-          completedOn: newDone && !m.completedOn ? new Date().toISOString().slice(0, 10) : m.completedOn,
-        };
-      })
-    );
-  };
-
-  const handleMilestoneDateChange = (index, dateVal) => {
-    setMilestones((prev) =>
-      prev.map((m, i) => (i === index ? { ...m, completedOn: dateVal } : m))
-    );
-  };
-
-  const handleRemoveMilestone = (index) => {
-    setMilestones((prev) => prev.filter((_, i) => i !== index));
-  };
-
   // Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -273,7 +218,7 @@ const ProjectLocationsManager = ({ project, onClose }) => {
       payload.append('area', formData.area.trim());
       payload.append('type', formData.type.trim() || 'Location');
       payload.append('summary', formData.summary.trim());
-      payload.append('progressPercent', formData.progressPercent);
+      payload.append('progressPercent', 0);
 
       if (formData.lat !== null && formData.lat !== undefined && formData.lat !== '') {
         payload.append('lat', formData.lat);
@@ -290,8 +235,7 @@ const ProjectLocationsManager = ({ project, onClose }) => {
       // Filter non-empty details
       const validDetails = details.filter((d) => d.label.trim() && d.value.trim());
       payload.append('details', JSON.stringify(validDetails));
-
-      payload.append('milestones', JSON.stringify(milestones));
+      payload.append('milestones', JSON.stringify([]));
 
       if (removedPhotos.length > 0) {
         payload.append('removedPhotos', JSON.stringify(removedPhotos));
@@ -355,7 +299,7 @@ const ProjectLocationsManager = ({ project, onClose }) => {
             {project?.title}
           </h2>
           <p className="text-neutral-400 text-xs md:text-sm mt-1">
-            Manage field pins, community sites, work progress, and project-specific metrics.
+            Manage field pins, community sites, GPS coordinates, and project-specific metrics.
           </p>
         </div>
         <div className="flex items-center gap-2.5 shrink-0">
@@ -388,14 +332,13 @@ const ProjectLocationsManager = ({ project, onClose }) => {
                   <th className="px-6 py-4">Type</th>
                   <th className="px-6 py-4">Coordinates</th>
                   <th className="px-6 py-4">Details</th>
-                  <th className="px-6 py-4">Progress</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                  <th className="px-6 py-4 text-right whitespace-nowrap min-w-[140px]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200">
                 {locations.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-16 text-center text-sm font-semibold text-neutral-500">
+                    <td colSpan="5" className="px-6 py-16 text-center text-sm font-semibold text-neutral-500">
                       No locations created for this project yet. Click &quot;Add Location&quot; to place your first site!
                     </td>
                   </tr>
@@ -463,55 +406,23 @@ const ProjectLocationsManager = ({ project, onClose }) => {
                           )}
                         </td>
 
-                        <td className="px-6 py-5">
-                          <div className="w-32">
-                            <div className="flex justify-between items-center text-xs font-bold mb-1">
-                              <span
-                                className={
-                                  loc.progressPercent === 100
-                                    ? 'text-emerald-700'
-                                    : loc.progressPercent > 0
-                                    ? 'text-primary-700'
-                                    : 'text-neutral-600'
-                                }
-                              >
-                                {loc.progressPercent || 0}%
-                              </span>
-                              <span className="text-[11px] text-neutral-500 font-medium">
-                                {loc.milestones?.filter((m) => m.done).length || 0}/
-                                {loc.milestones?.length || 0}
-                              </span>
-                            </div>
-                            <div className="w-full h-2.5 bg-neutral-200 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full transition-all duration-300 ${
-                                  loc.progressPercent === 100
-                                    ? 'bg-emerald-500'
-                                    : loc.progressPercent > 0
-                                    ? 'bg-primary-600'
-                                    : 'bg-neutral-400'
-                                }`}
-                                style={{ width: `${Math.min(100, loc.progressPercent || 0)}%` }}
-                              />
-                            </div>
+                        <td className="px-6 py-5 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => openEditModal(loc)}
+                              className="p-2 bg-white text-neutral-700 rounded-xl hover:text-neutral-900 hover:bg-neutral-100 border border-neutral-300 shadow-xs transition-colors"
+                              title="Edit Location"
+                            >
+                              <FiEdit3 size={15} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(loc)}
+                              className="p-2 bg-white text-red-600 rounded-xl hover:bg-red-50 hover:text-red-700 border border-red-200 hover:border-red-300 shadow-xs transition-colors"
+                              title="Delete Location"
+                            >
+                              <FiTrash2 size={15} />
+                            </button>
                           </div>
-                        </td>
-
-                        <td className="px-6 py-5 text-right space-x-2">
-                          <button
-                            onClick={() => openEditModal(loc)}
-                            className="p-2.5 bg-white text-neutral-700 rounded-xl hover:text-neutral-900 hover:bg-neutral-100 border border-neutral-300 shadow-xs transition-colors"
-                            title="Edit Location"
-                          >
-                            <FiEdit3 size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(loc)}
-                            className="p-2.5 bg-white text-red-600 rounded-xl hover:bg-red-50 hover:text-red-700 border border-red-200 hover:border-red-300 shadow-xs transition-colors"
-                            title="Delete Location"
-                          >
-                            <FiTrash2 size={16} />
-                          </button>
                         </td>
                       </tr>
                     );
@@ -665,130 +576,6 @@ const ProjectLocationsManager = ({ project, onClose }) => {
                           >
                             <FiTrash2 size={14} />
                           </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Progress Percentage Slider */}
-                <div className="p-5 bg-neutral-50/90 border border-neutral-300 rounded-2xl space-y-3 shadow-xs">
-                  <div className="flex justify-between items-center">
-                    <label className="text-xs font-bold text-neutral-800 uppercase tracking-wider">
-                      Work Progress Percentage
-                    </label>
-                    <span className="text-sm font-extrabold text-primary-700 bg-white border border-primary-300 px-3.5 py-1 rounded-full shadow-xs">
-                      {formData.progressPercent}%
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={formData.progressPercent}
-                    onChange={(e) =>
-                      setFormData({ ...formData, progressPercent: Number(e.target.value) })
-                    }
-                    className="w-full h-2.5 bg-neutral-300 rounded-lg appearance-none cursor-pointer accent-primary-600"
-                  />
-                  <div className="flex justify-between text-[11px] text-neutral-600 font-semibold">
-                    <span>0% (Planning)</span>
-                    <span>50% (In Progress)</span>
-                    <span>100% (Completed)</span>
-                  </div>
-                </div>
-
-                {/* Milestones Editor */}
-                <div className="p-5 bg-white border border-neutral-300 rounded-2xl space-y-4 shadow-xs">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="text-sm font-bold text-neutral-900">
-                        Milestones Checklist
-                      </h4>
-                      <p className="text-xs text-neutral-600 font-medium">
-                        Track progress milestones with optional completion dates.
-                      </p>
-                    </div>
-                    <span className="text-xs font-bold text-neutral-800 bg-neutral-100 border border-neutral-300 px-3 py-1 rounded-lg">
-                      {milestones.filter((m) => m.done).length}/{milestones.length} Done
-                    </span>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="e.g. Groundbreaking & foundation completed"
-                      value={newMilestoneTitle}
-                      onChange={(e) => setNewMilestoneTitle(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddMilestone();
-                        }
-                      }}
-                      className="flex-1 px-4 py-2 bg-white border border-neutral-300 rounded-xl text-neutral-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 shadow-xs"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddMilestone}
-                      className="px-5 py-2 bg-neutral-900 hover:bg-black text-white rounded-xl text-xs font-bold shadow-xs transition-colors shrink-0"
-                    >
-                      Add Milestone
-                    </button>
-                  </div>
-
-                  {milestones.length > 0 && (
-                    <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                      {milestones.map((milestone, idx) => (
-                        <div
-                          key={idx}
-                          className={`flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border transition-colors ${
-                            milestone.done
-                              ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-semibold shadow-xs'
-                              : 'bg-neutral-50/80 border-neutral-300 text-neutral-800 font-medium'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-[200px]">
-                            <button
-                              type="button"
-                              onClick={() => handleToggleMilestone(idx)}
-                              className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors shrink-0 ${
-                                milestone.done
-                                  ? 'bg-emerald-600 border-emerald-600 text-white'
-                                  : 'bg-white border-neutral-400 text-transparent hover:border-neutral-600'
-                              }`}
-                            >
-                              <FiCheck size={14} />
-                            </button>
-                            <span
-                              className={`text-xs ${
-                                milestone.done ? 'line-through text-neutral-500' : 'text-neutral-900 font-bold'
-                              }`}
-                            >
-                              {milestone.title}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-2 shrink-0">
-                            <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-neutral-300 text-xs shadow-xs">
-                              <FiCalendar size={13} className="text-neutral-500" />
-                              <input
-                                type="date"
-                                value={milestone.completedOn || ''}
-                                onChange={(e) => handleMilestoneDateChange(idx, e.target.value)}
-                                className="text-xs font-semibold text-neutral-800 bg-transparent focus:outline-none"
-                              />
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveMilestone(idx)}
-                              className="p-1.5 text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete milestone"
-                            >
-                              <FiTrash2 size={14} />
-                            </button>
-                          </div>
                         </div>
                       ))}
                     </div>

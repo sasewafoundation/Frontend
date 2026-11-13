@@ -5,13 +5,13 @@ import Seo from '../../components/Seo';
 
 const ProjectMapPage = () => {
   const { slug } = useParams();
-  const effectiveSlug = slug || 'rural-school-support';
+  const effectiveSlug = (slug && slug !== 'undefined' && slug !== 'null') ? slug : 'scholarship-and-school-support';
 
   return (
     <>
       <Seo
         title="Interactive Project Map | Field Tracker"
-        description="Explore community schools, exact field coordinates, and verified construction milestones supported by Sa-Sewa Foundation across Nepal."
+        description="Explore community schools, exact field coordinates, and project locations supported by Sa-Sewa Foundation across Nuwakot, Nepal."
       />
       <main className="h-screen w-screen overflow-hidden bg-[#f6f3ee]">
         <ProjectMap projectSlug={effectiveSlug} />

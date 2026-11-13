@@ -8,7 +8,15 @@ import DOMPurify from 'dompurify';
 export const sanitizeHtml = (dirty) => {
   if (!dirty) return '';
 
-  return DOMPurify.sanitize(dirty, {
+  const sanitizer = typeof DOMPurify?.sanitize === 'function'
+    ? DOMPurify
+    : (typeof DOMPurify === 'function' && typeof window !== 'undefined' ? DOMPurify(window) : null);
+
+  if (!sanitizer?.sanitize) {
+    return dirty;
+  }
+
+  return sanitizer.sanitize(dirty, {
     ALLOWED_TAGS: [
       'b', 'i', 'em', 'strong', 'u', 's', 'p', 'br', 'hr',
       'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',

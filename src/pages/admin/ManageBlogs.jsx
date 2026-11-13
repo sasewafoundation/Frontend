@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
-import { FiEdit3, FiTrash2, FiPlus, FiFileText, FiX, FiYoutube, FiImage, FiBold, FiItalic, FiCheckCircle, FiEyeOff } from 'react-icons/fi';
+import { FiEdit3, FiTrash2, FiPlus, FiFileText, FiX, FiYoutube, FiImage, FiBold, FiItalic, FiCheckCircle, FiEyeOff, FiList, FiEye } from 'react-icons/fi';
 import { AnimatePresence } from 'framer-motion';
 import { getMediaUrl } from '../../utils/mediaUrl';
 import LogoLoader from '../../components/LogoLoader';
+import { renderMarkdown } from '../../utils/markdown.js';
 
 const ManageBlogs = () => {
   const [blogs, setBlogs] = useState([]);
@@ -20,6 +21,7 @@ const ManageBlogs = () => {
   const [galleryPreviews, setGalleryPreviews] = useState([]);
   
   const [actionLoading, setActionLoading] = useState(false);
+  const [editorTab, setEditorTab] = useState('write');
   const textareaRef = useRef(null);
 
   // FIX 16: Track all generated object URLs to clean up and prevent browser memory leaks
@@ -177,23 +179,86 @@ const ManageBlogs = () => {
     }
   };
 
-  const wrapText = (tagOpen, tagClose = tagOpen) => {
+  const applyFormatting = (format) => {
     const tex = textareaRef.current;
     if (!tex) return;
     const start = tex.selectionStart;
     const end = tex.selectionEnd;
     const text = tex.value;
-    const before = text.substring(0, start);
     const selection = text.substring(start, end);
-    const after = text.substring(end);
-    
-    const newVal = `${before}${tagOpen}${selection}${tagClose}${after}`;
-    setNewBlog({ ...newBlog, content: newVal });
-    
+
+    let newVal = text;
+    let newStart = start;
+    let newEnd = end;
+
+    if (format === 'bold') {
+      const placeholder = selection || 'bold text';
+      const replacement = `**${placeholder}**`;
+      newVal = text.substring(0, start) + replacement + text.substring(end);
+      newStart = start + 2;
+      newEnd = start + 2 + placeholder.length;
+    } else if (format === 'italic') {
+      const placeholder = selection || 'italic text';
+      const replacement = `*${placeholder}*`;
+      newVal = text.substring(0, start) + replacement + text.substring(end);
+      newStart = start + 1;
+      newEnd = start + 1 + placeholder.length;
+    } else if (format === 'h1' || format === 'h2' || format === 'h3') {
+      const prefix = format === 'h1' ? '# ' : format === 'h2' ? '## ' : '### ';
+      const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+      let lineEnd = text.indexOf('\n', end);
+      if (lineEnd === -1) lineEnd = text.length;
+
+      const currentLine = text.substring(lineStart, lineEnd);
+      const strippedLine = currentLine.replace(/^#{1,6}\s*/, '');
+      const placeholder = strippedLine || (format === 'h1' ? 'Heading 1' : format === 'h2' ? 'Heading 2' : 'Heading 3');
+      const replacement = `${prefix}${placeholder}`;
+
+      newVal = text.substring(0, lineStart) + replacement + text.substring(lineEnd);
+      newStart = lineStart + prefix.length;
+      newEnd = lineStart + replacement.length;
+    } else if (format === 'ul') {
+      const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+      let lineEnd = text.indexOf('\n', end);
+      if (lineEnd === -1) lineEnd = text.length;
+
+      const block = text.substring(lineStart, lineEnd);
+      const lines = block.split('\n');
+      const transformed = lines
+        .map((l) => {
+          const stripped = l.replace(/^[-*]\s*/, '').replace(/^\d+\.\s*/, '');
+          return `- ${stripped || 'List item'}`;
+        })
+        .join('\n');
+
+      newVal = text.substring(0, lineStart) + transformed + text.substring(lineEnd);
+      newStart = lineStart;
+      newEnd = lineStart + transformed.length;
+    } else if (format === 'ol') {
+      const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+      let lineEnd = text.indexOf('\n', end);
+      if (lineEnd === -1) lineEnd = text.length;
+
+      const block = text.substring(lineStart, lineEnd);
+      const lines = block.split('\n');
+      const transformed = lines
+        .map((l, idx) => {
+          const stripped = l.replace(/^[-*]\s*/, '').replace(/^\d+\.\s*/, '');
+          return `${idx + 1}. ${stripped || 'List item'}`;
+        })
+        .join('\n');
+
+      newVal = text.substring(0, lineStart) + transformed + text.substring(lineEnd);
+      newStart = lineStart;
+      newEnd = lineStart + transformed.length;
+    }
+
+    setNewBlog((prev) => ({ ...prev, content: newVal }));
+
     setTimeout(() => {
       tex.focus();
-      tex.setSelectionRange(start + tagOpen.length, end + tagOpen.length);
-    }, 10);
+      tex.setSelectionRange(newStart, newEnd);
+    }, 15);
   };
 
   if (loading) return <LogoLoader message="Loading blog entries..." />;
@@ -308,36 +373,134 @@ const ManageBlogs = () => {
                     </div>
 
                     <div className="relative">
-                      <div className="flex items-center justify-between mb-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                         <label className="form-label mb-0">Main Content *</label>
-                        <div className="flex gap-1.5">
-                          <button 
-                            type="button" 
-                            onClick={() => wrapText('**', '**')} 
-                            className="p-1.5 px-2 bg-neutral-100 text-neutral-700 rounded-lg text-xs font-semibold hover:bg-primary-50 hover:text-primary-700 transition-all"
-                            title="Bold"
+
+                        {/* Editor Mode Tabs (Write vs Live Preview) */}
+                        <div className="inline-flex rounded-lg bg-neutral-100 p-0.5 border border-neutral-200">
+                          <button
+                            type="button"
+                            onClick={() => setEditorTab('write')}
+                            className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all flex items-center gap-1 ${
+                              editorTab === 'write'
+                                ? 'bg-white text-neutral-900 shadow-xs'
+                                : 'text-neutral-500 hover:text-neutral-900'
+                            }`}
                           >
-                            <FiBold size={13} />
+                            <FiEdit3 size={11} /> Write
                           </button>
-                          <button 
-                            type="button" 
-                            onClick={() => wrapText('_', '_')} 
-                            className="p-1.5 px-2 bg-neutral-100 text-neutral-700 rounded-lg text-xs font-semibold hover:bg-primary-50 hover:text-primary-700 transition-all"
-                            title="Italic"
+                          <button
+                            type="button"
+                            onClick={() => setEditorTab('preview')}
+                            className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all flex items-center gap-1 ${
+                              editorTab === 'preview'
+                                ? 'bg-white text-neutral-900 shadow-xs'
+                                : 'text-neutral-500 hover:text-neutral-900'
+                            }`}
                           >
-                            <FiItalic size={13} />
+                            <FiEye size={11} /> Preview
                           </button>
                         </div>
                       </div>
-                      <textarea 
-                        ref={textareaRef} 
-                        required 
-                        placeholder="Write article content here..." 
-                        rows={10} 
-                        className="form-input leading-relaxed resize-none" 
-                        value={newBlog.content} 
-                        onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })} 
-                      />
+
+                      {/* Formatting Toolbar */}
+                      {editorTab === 'write' && (
+                        <div className="flex flex-wrap items-center gap-1 p-1.5 bg-neutral-50 border border-neutral-300 rounded-t-xl border-b-0">
+                          {/* Heading Options */}
+                          <div className="flex items-center gap-0.5 pr-1.5 border-r border-neutral-200">
+                            <button
+                              type="button"
+                              onClick={() => applyFormatting('h1')}
+                              className="px-2 py-1 bg-white hover:bg-neutral-100 text-neutral-800 rounded text-[11px] font-extrabold border border-neutral-200 shadow-2xs transition-colors"
+                              title="Heading 1 (#)"
+                            >
+                              H1
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => applyFormatting('h2')}
+                              className="px-2 py-1 bg-white hover:bg-neutral-100 text-neutral-800 rounded text-[11px] font-extrabold border border-neutral-200 shadow-2xs transition-colors"
+                              title="Heading 2 (##)"
+                            >
+                              H2
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => applyFormatting('h3')}
+                              className="px-2 py-1 bg-white hover:bg-neutral-100 text-neutral-800 rounded text-[11px] font-extrabold border border-neutral-200 shadow-2xs transition-colors"
+                              title="Heading 3 (###)"
+                            >
+                              H3
+                            </button>
+                          </div>
+
+                          {/* Bold & Italic */}
+                          <div className="flex items-center gap-0.5 px-1.5 border-r border-neutral-200">
+                            <button
+                              type="button"
+                              onClick={() => applyFormatting('bold')}
+                              className="p-1.5 px-2 bg-white hover:bg-neutral-100 text-neutral-800 rounded text-xs font-bold border border-neutral-200 shadow-2xs transition-colors"
+                              title="Bold (**text**)"
+                            >
+                              <FiBold size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => applyFormatting('italic')}
+                              className="p-1.5 px-2 bg-white hover:bg-neutral-100 text-neutral-800 rounded text-xs font-bold border border-neutral-200 shadow-2xs transition-colors"
+                              title="Italic (*text*)"
+                            >
+                              <FiItalic size={13} />
+                            </button>
+                          </div>
+
+                          {/* List Options */}
+                          <div className="flex items-center gap-0.5 pl-1.5">
+                            <button
+                              type="button"
+                              onClick={() => applyFormatting('ul')}
+                              className="p-1.5 px-2 bg-white hover:bg-neutral-100 text-neutral-800 rounded text-xs font-bold border border-neutral-200 shadow-2xs transition-colors flex items-center gap-1"
+                              title="Bullet List (- item)"
+                            >
+                              <FiList size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => applyFormatting('ol')}
+                              className="px-2 py-1 bg-white hover:bg-neutral-100 text-neutral-800 rounded text-[11px] font-bold border border-neutral-200 shadow-2xs transition-colors"
+                              title="Numbered List (1. item)"
+                            >
+                              1.
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {editorTab === 'write' ? (
+                        <textarea
+                          ref={textareaRef}
+                          required
+                          placeholder="Write article content here... Use headings (H1, H2, H3), bold (**text**), italic (*text*), and lists (- item)."
+                          rows={10}
+                          className="form-input leading-relaxed resize-y rounded-t-none"
+                          value={newBlog.content}
+                          onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })}
+                        />
+                      ) : (
+                        <div className="w-full min-h-[220px] max-h-[380px] overflow-y-auto px-5 py-4 bg-neutral-50/60 border border-neutral-300 rounded-xl">
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-2 border-b border-neutral-200">
+                            Public Story Rendering Preview
+                          </div>
+                          {newBlog.content ? (
+                            <div
+                              className="text-xs text-neutral-800 space-y-2 leading-relaxed"
+                              dangerouslySetInnerHTML={{ __html: renderMarkdown(newBlog.content) }}
+                            />
+                          ) : (
+                            <p className="text-xs text-neutral-500 italic">No article content entered yet.</p>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div>
