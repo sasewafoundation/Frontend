@@ -18,6 +18,7 @@ const ProjectDetail = lazy(() => import('./pages/public/ProjectDetail'));
 const Team = lazy(() => import('./pages/public/Team'));
 const Donation = lazy(() => import('./pages/public/Donation'));
 const Article = lazy(() => import('./pages/public/Article'));
+const ProjectMapPage = lazy(() => import('./pages/public/ProjectMapPage'));
 // FIX 8: 404 page lazy load
 const NotFound = lazy(() => import('./pages/public/NotFound'));
 
@@ -55,6 +56,11 @@ function App() {
               {/* FIX 7: Redirect legacy /donate URL directly to /donation */}
               <Route path="donate" element={<Navigate to="/donation" replace />} />
             </Route>
+
+            {/* Interactive Project Map Routes */}
+            <Route path="/projects/:slug/map" element={<ProjectMapPage />} />
+            <Route path="/map" element={<ProjectMapPage />} />
+            <Route path="/map/:slug" element={<ProjectMapPage />} />
 
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />

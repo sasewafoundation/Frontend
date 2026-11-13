@@ -177,16 +177,14 @@ const ProjectDetail = () => {
                 </div>
 
                 <div className="shrink-0 pt-2 lg:pt-0">
-                  <a
-                    href={`${(import.meta.env.VITE_MAPS_URL || 'https://maps.sasewa.org.np').replace(/\/+$/, '')}/${project.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Link
+                    to={`/projects/${project.slug}/map`}
                     className="inline-flex items-center justify-center gap-2.5 bg-primary-600 hover:bg-primary-700 active:scale-95 text-white font-bold text-sm sm:text-base px-7 py-3.5 rounded-full shadow-md hover:shadow-lg transition-all"
                   >
                     <FiMapPin size={18} />
                     Open Project Map
                     <FiArrowRight size={18} />
-                  </a>
+                  </Link>
                 </div>
               </div>
 

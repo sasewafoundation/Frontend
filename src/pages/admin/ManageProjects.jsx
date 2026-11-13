@@ -549,7 +549,7 @@ const ManageProjects = () => {
                             className="w-full px-3.5 py-2.5 bg-white border border-primary-300 rounded-xl text-xs font-bold text-neutral-900 shadow-xs focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                           />
                           <p className="text-[11px] font-semibold text-primary-800 mt-1">
-                            Public URL: maps.sasewa.org.np/{newProject.slug || 'project-slug'}
+                            Public URL: /projects/{newProject.slug || 'project-slug'}/map
                           </p>
                         </div>
                       )}
