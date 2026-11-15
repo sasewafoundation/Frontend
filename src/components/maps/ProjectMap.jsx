@@ -243,21 +243,11 @@ export default function ProjectMap({ projectSlug }) {
     try {
       let res;
       try {
-        res = await api.get(`/projects/${activeSlug}/map?_t=${Date.now()}`, {
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            Pragma: 'no-cache',
-          },
-        });
+        res = await api.get(`/projects/${activeSlug}/map?_t=${Date.now()}`);
       } catch (err1) {
         // If the specific slug failed and wasn't the main project slug, attempt default
         if (activeSlug !== 'scholarship-and-school-support') {
-          res = await api.get(`/projects/scholarship-and-school-support/map?_t=${Date.now()}`, {
-            headers: {
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              Pragma: 'no-cache',
-            },
-          });
+          res = await api.get(`/projects/scholarship-and-school-support/map?_t=${Date.now()}`);
         } else {
           throw err1;
         }

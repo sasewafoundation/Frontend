@@ -31,17 +31,27 @@ const ProjectDetail = () => {
   useEffect(() => {
     const fetchProject = async () => {
       try {
+        const activeSlug =
+          slug && slug !== 'undefined' && slug !== 'null'
+            ? slug
+            : 'scholarship-and-school-support';
+
         let res;
         try {
-          res = await api.get(`/projects/s/${slug}?_t=${Date.now()}`, {
-            headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
-          });
+          res = await api.get(`/projects/s/${activeSlug}?_t=${Date.now()}`);
         } catch {
-          res = await api.get(`/projects/${slug}?_t=${Date.now()}`, {
-            headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
-          });
+          try {
+            res = await api.get(`/projects/${activeSlug}?_t=${Date.now()}`);
+          } catch {
+            // Fallback: load project list from /projects
+            res = await api.get(`/projects?_t=${Date.now()}`);
+          }
         }
-        const projectData = res.data.data || res.data;
+
+        const projectData = Array.isArray(res.data?.data)
+          ? res.data.data[0]
+          : res.data?.data || res.data;
+
         if (!projectData) {
           setError('Project not found.');
           return;
